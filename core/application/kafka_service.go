@@ -34,7 +34,7 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 	}
 	fmt.Println("Found correlation Id: ", correlationId)
 
-	responseData := []byte{00, 00, 00, 00, req.Data[4], req.Data[5], req.Data[6], req.Data[7]}
+	responseData := []byte{00, 00, 00, 00, req.Data[8], req.Data[9], req.Data[10], req.Data[11]}
 
 	fmt.Printf("Response Data %+v", responseData)
 	return domain.Response{
