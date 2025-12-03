@@ -58,9 +58,9 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 // This is a domain rule, so it belongs in the core.
 func (s *KafkaService) determineErrorCode(apiVersion int) []byte {
 	errorCodeBuffer := []byte{0x00, 0x00}
-	//if apiVersion < 0 || apiVersion > 4 {
-	//	// Business rule: Return error code 35 for unsupported API versions
-	//	errorCodeBuffer = []byte{0x00, 0x23}
-	//}
+	if apiVersion > 4 || apiVersion < 0 {
+		// Business rule: Return error code 35 for unsupported API versions
+		errorCodeBuffer = []byte{0x00, 0x23}
+	}
 	return errorCodeBuffer
 }
