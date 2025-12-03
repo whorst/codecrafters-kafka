@@ -1,8 +1,6 @@
 package application
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
@@ -26,15 +24,10 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 	// For now, return the hardcoded response from the original code
 
 	fmt.Printf("Received Request Data %+v\n", req.Data)
+	correlationIdBytes := getCorrelationIdFromMessageHeader(req.Data)
 
-	var correlationId int32
-	if err := binary.Read(bytes.NewReader(req.Data[4:8]), binary.BigEndian, &correlationId); err != nil {
-		fmt.Println("Failed to read correlationId:", err)
-		return domain.Response{}, fmt.Errorf("Could not read correlationId")
-	}
-	fmt.Println("Found correlation Id: ", correlationId)
-
-	responseData := []byte{00, 00, 00, 00, req.Data[8], req.Data[9], req.Data[10], req.Data[11]}
+	responseData := []byte{00, 00, 00, 00}
+	responseData = append(responseData, correlationIdBytes...)
 
 	fmt.Printf("Response Data %+v", responseData)
 	return domain.Response{
