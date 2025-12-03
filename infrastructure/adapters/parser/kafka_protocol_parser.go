@@ -35,6 +35,10 @@ func (p *KafkaProtocolParser) EncodeResponse(response *parser.ResponseData) ([]b
 	responseData = append(responseData, response.Size...)
 	responseData = append(responseData, response.CorrelationID...)
 	responseData = append(responseData, response.ErrorCode...)
+	responseData = append(responseData, response.ApiKeys...)
+	responseData = append(responseData, response.ApiKeys...)
+	responseData = append(responseData, response.MinVersion...)
+	responseData = append(responseData, response.MaxVersion...)
 	return responseData, nil
 }
 

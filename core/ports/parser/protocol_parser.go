@@ -19,4 +19,8 @@ type ResponseData struct {
 	Size          []byte // Response size (4 bytes)
 	CorrelationID []byte // Correlation ID (4 bytes)
 	ErrorCode     []byte // Error code (2 bytes)
+	ApiKeys       []byte // Hard Coded to 1 byte
+	ApiKey        []byte // Hard Coded to 2 byte
+	MinVersion    []byte // Hard coded to 2 bytes
+	MaxVersion    []byte // HArd Coded to 2 bytes
 }

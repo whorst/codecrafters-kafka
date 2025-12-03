@@ -33,11 +33,18 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 
 	errorCode := s.determineErrorCode(parsedReq.APIVersion)
 
+	messageSizeBuffer := make([]byte, 4)
+	binary.BigEndian.PutUint32(messageSizeBuffer, uint32(17))
+
 	// Build response data structure
 	responseData := &parser.ResponseData{
-		Size:          []byte{0x00, 0x00, 0x00, 0x00}, // Response size placeholder
+		Size:          messageSizeBuffer, // Response size placeholder
 		CorrelationID: parsedReq.CorrelationID,
 		ErrorCode:     errorCode,
+		ApiKeys:       []byte{0x02},
+		ApiKey:        []byte{0x00, 0x12},
+		MinVersion:    []byte{0x00, 0x00},
+		MaxVersion:    []byte{0x00, 0x04},
 	}
 
 	// Encode the response using the protocol parser (infrastructure concern)
