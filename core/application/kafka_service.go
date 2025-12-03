@@ -1,0 +1,28 @@
+package application
+
+import (
+	"github.com/codecrafters-io/kafka-starter-go/core/domain"
+	"github.com/codecrafters-io/kafka-starter-go/core/ports/driving"
+)
+
+// KafkaService implements the driving port (KafkaHandler interface).
+// This is the application core that contains the business logic.
+// Rule 2: The application implements the port defined by the core.
+type KafkaService struct{}
+
+// NewKafkaService creates a new Kafka service that implements the driving port
+func NewKafkaService() driving.KafkaHandler {
+	return &KafkaService{}
+}
+
+// HandleRequest processes a Kafka request and returns a response.
+// This is where the core business logic lives.
+func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error) {
+	// TODO: Implement actual Kafka protocol parsing and handling
+	// For now, return the hardcoded response from the original code
+	responseData := []byte{00, 00, 00, 02, 00, 00, 00, 07}
+
+	return domain.Response{
+		Data: responseData,
+	}, nil
+}

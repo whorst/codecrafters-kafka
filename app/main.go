@@ -1,53 +1,33 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"io"
-	"net"
 	"os"
-)
 
-// Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
-var _ = net.Listen
-var _ = os.Exit
+	"github.com/codecrafters-io/kafka-starter-go/core/application"
+	"github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/driving"
+)
 
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
 	fmt.Println("Logs from your program will appear here!")
 
-	// TODO: Uncomment the code below to pass the first stage
-	//
-	l, err := net.Listen("tcp", "0.0.0.0:9092")
-	if err != nil {
-		fmt.Println("Failed to bind to port 9092")
+	// Composition Root: Wire up the hexagonal architecture
+	// Following the three immutable rules:
+	// 1. Core defines the port (core/ports/driving/KafkaHandler)
+	// 2. Application implements the port (core/application/KafkaService)
+	// 3. Adapter uses the port (infrastructure/adapters/driving/TCPServer)
+	//    Dependencies point inward: infrastructure -> core
+
+	// Create the application service (core business logic that implements the driving port)
+	kafkaService := application.NewKafkaService()
+
+	// Create the primary adapter (driving adapter that uses the driving port)
+	tcpServer := driving.NewTCPServer(kafkaService, "0.0.0.0:9092")
+
+	// Start the server
+	if err := tcpServer.Start(); err != nil {
+		fmt.Printf("Failed to start server: %v\n", err)
 		os.Exit(1)
-	}
-	defer l.Close()
-
-	for {
-		conn, err := l.Accept()
-		if err != nil {
-			fmt.Println("Error accepting connection: ", err.Error())
-			os.Exit(1)
-		}
-		go handleConnection(conn)
-	}
-}
-
-func handleConnection(conn net.Conn) {
-	defer conn.Close()
-
-	for {
-		receivedBytes := bytes.Buffer{}
-		buff := make([]byte, 1024)
-
-		_, err := conn.Read(buff)
-		if err != nil && err == io.EOF {
-			break
-		}
-
-		receivedBytes.Write(buff)
-		_, err = conn.Write([]byte{00, 00, 00, 02, 00, 00, 00, 07})
 	}
 }
