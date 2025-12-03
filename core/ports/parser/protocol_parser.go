@@ -28,3 +28,16 @@ type ResponseData struct {
 	ThrottleTimeMs  []byte // Hard Coded to 4 bytes
 	TagBufferParent []byte // Hard Coded to 1 byte
 }
+
+func (ResponseData ResponseData) GetMessageSize() int {
+	totalLength := len(ResponseData.CorrelationID)
+	totalLength += len(ResponseData.ErrorCode)
+	totalLength += len(ResponseData.ApiKeysArrayLength)
+	totalLength += len(ResponseData.ApiKey)
+	totalLength += len(ResponseData.MinVersion)
+	totalLength += len(ResponseData.MaxVersion)
+	totalLength += len(ResponseData.TagBufferChild)
+	totalLength += len(ResponseData.ThrottleTimeMs)
+	totalLength += len(ResponseData.TagBufferParent)
+	return totalLength
+}

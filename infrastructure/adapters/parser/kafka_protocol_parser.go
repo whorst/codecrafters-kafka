@@ -42,17 +42,7 @@ func (p *KafkaProtocolParser) EncodeResponse(response *parser.ResponseData) ([]b
 
 	messageSizeBuffer := make([]byte, 4)
 
-	totalLength := len(response.CorrelationID)
-	totalLength += len(response.ErrorCode)
-	totalLength += len(response.ApiKeysArrayLength)
-	totalLength += len(response.ApiKey)
-	totalLength += len(response.MinVersion)
-	totalLength += len(response.MaxVersion)
-	totalLength += len(response.TagBufferChild)
-	totalLength += len(response.ThrottleTimeMs)
-	totalLength += len(response.TagBufferParent)
-
-	binary.BigEndian.PutUint32(messageSizeBuffer, uint32(totalLength))
+	binary.BigEndian.PutUint32(messageSizeBuffer, uint32(response.GetMessageSize()))
 	responseData = append(responseData, messageSizeBuffer...)
 	responseData = append(responseData, response.CorrelationID...)
 	responseData = append(responseData, response.ErrorCode...)
