@@ -17,7 +17,7 @@ type ParsedRequest struct {
 // ResponseData represents the data needed to build a response
 type ResponseData struct {
 	Size          []byte // Response size (4 bytes)
-	CorrelationID []byte // Correlation ID (4 bytes)
+	CorrelationID []byte // Correlation ID (Unknown)
 	ErrorCode     []byte // Error code (2 bytes)
 	ApiKeys       []byte // Hard Coded to 1 byte
 	ApiKey        []byte // Hard Coded to 2 byte
