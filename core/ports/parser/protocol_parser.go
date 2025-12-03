@@ -23,7 +23,6 @@ type ResponseData struct {
 	ApiKey     []byte // Hard Coded to 2 byte
 	MinVersion []byte // Hard coded to 2 bytes
 	MaxVersion []byte // Hard Coded to 2 bytes
-	TagBuffer  []byte // Hard Coded to 0 byte
 	// ================ End Array ==========================
 	ThrottleTimeMs []byte // Hard Coded to 4 bytes
 }
