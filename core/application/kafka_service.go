@@ -1,40 +1,63 @@
 package application
 
 import (
-	"fmt"
+	"encoding/binary"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/driving"
+	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
 )
 
 // KafkaService implements the driving port (KafkaHandler interface).
 // This is the application core that contains the business logic.
 // Rule 2: The application implements the port defined by the core.
-type KafkaService struct{}
+type KafkaService struct {
+	parser parser.ProtocolParser
+}
 
 // NewKafkaService creates a new Kafka service that implements the driving port
-func NewKafkaService() driving.KafkaHandler {
-	return &KafkaService{}
+func NewKafkaService(parser parser.ProtocolParser) driving.KafkaHandler {
+	return &KafkaService{
+		parser: parser,
+	}
 }
 
 // HandleRequest processes a Kafka request and returns a response.
 // This is where the core business logic lives.
 func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error) {
-	// TODO: Implement actual Kafka protocol parsing and handling
-	// For now, return the hardcoded response from the original code
+	// Parse the request using the protocol parser (infrastructure concern)
+	parsedReq, err := s.parser.ParseRequest(req.Data)
+	if err != nil {
+		return domain.Response{}, err
+	}
 
-	fmt.Printf("Received Request Data %+v\n", req.Data)
-	correlationIdBytes := getCorrelationIdFromMessageHeader(req.Data)
-	requestApiVersionBytes := getRequestApiVersionFromMessageHeader(req.Data)
-	apiVersion := parseBytesToInt(requestApiVersionBytes)
-	errorCodeBuffer := getErrorCode(apiVersion)
+	errorCode := s.determineErrorCode(parsedReq.APIVersion)
 
-	responseData := []byte{00, 00, 00, 00}
-	responseData = append(responseData, correlationIdBytes...)
-	responseData = append(responseData, errorCodeBuffer...)
+	// Build response data structure
+	responseData := &parser.ResponseData{
+		Size:          []byte{0x00, 0x00, 0x00, 0x00}, // Response size placeholder
+		CorrelationID: parsedReq.CorrelationID,
+		ErrorCode:     errorCode,
+	}
 
-	fmt.Printf("Response Data %+v", responseData)
+	// Encode the response using the protocol parser (infrastructure concern)
+	encodedResponse, err := s.parser.EncodeResponse(responseData)
+	if err != nil {
+		return domain.Response{}, err
+	}
+
 	return domain.Response{
-		Data: responseData,
+		Data: encodedResponse,
 	}, nil
+}
+
+// determineErrorCode contains the business logic for error code determination.
+// This is a domain rule, so it belongs in the core.
+func (s *KafkaService) determineErrorCode(apiVersion int) []byte {
+	errorCodeBuffer := make([]byte, 2)
+	if apiVersion < 0 || apiVersion > 4 {
+		// Business rule: Return error code 35 for unsupported API versions
+		binary.BigEndian.PutUint16(errorCodeBuffer, uint16(35))
+	}
+	return errorCodeBuffer
 }
