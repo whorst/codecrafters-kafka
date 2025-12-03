@@ -31,7 +31,7 @@ func (p *KafkaProtocolParser) ParseRequest(data []byte) (*parser.ParsedRequest, 
 }
 
 func (p *KafkaProtocolParser) EncodeResponse(response *parser.ResponseData) ([]byte, error) {
-	responseData := make([]byte, 0, 10)
+	responseData := []byte{}
 	responseData = append(responseData, response.Size...)
 	responseData = append(responseData, response.CorrelationID...)
 	responseData = append(responseData, response.ErrorCode...)
