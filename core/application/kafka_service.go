@@ -35,7 +35,7 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 	responseData := &parser.ResponseData{
 		CorrelationID:      parsedReq.CorrelationID,
 		ErrorCode:          errorCode,
-		ApiKeysArrayLength: []byte{0x02},
+		ApiKeysArrayLength: []byte{0x01},
 		ApiKey:             []byte{0x00, 0x12},
 		MinVersion:         []byte{0x00, 0x00},
 		MaxVersion:         []byte{0x00, 0x04},
