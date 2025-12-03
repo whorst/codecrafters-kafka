@@ -39,7 +39,7 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 		ApiKey:             []byte{0x00, 0x12},
 		MinVersion:         []byte{0x00, 0x00},
 		MaxVersion:         []byte{0x00, 0x04},
-		TagBuffer:          []byte{},
+		TagBuffer:          nil,
 		ThrottleTimeMs:     []byte{0x00, 0x00, 0x00, 0x00},
 	}
 
