@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"encoding/binary"
+
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
 )
 
@@ -32,13 +34,25 @@ func (p *KafkaProtocolParser) ParseRequest(data []byte) (*parser.ParsedRequest, 
 
 func (p *KafkaProtocolParser) EncodeResponse(response *parser.ResponseData) ([]byte, error) {
 	responseData := []byte{}
-	responseData = append(responseData, response.Size...)
+
+	messageSizeBuffer := make([]byte, 4)
+
+	totalLength := len(response.CorrelationID)
+	totalLength += len(response.ErrorCode)
+	totalLength += len(response.ApiKeysArrayLength)
+	totalLength += len(response.ApiKey)
+	totalLength += len(response.MinVersion)
+	totalLength += len(response.MaxVersion)
+
+	binary.BigEndian.PutUint32(messageSizeBuffer, uint32(totalLength))
+	responseData = append(responseData, messageSizeBuffer...)
 	responseData = append(responseData, response.CorrelationID...)
 	responseData = append(responseData, response.ErrorCode...)
-	responseData = append(responseData, response.ApiKeys...)
-	responseData = append(responseData, response.ApiKeys...)
+	responseData = append(responseData, response.ApiKeysArrayLength...)
+	responseData = append(responseData, response.ApiKey...)
 	responseData = append(responseData, response.MinVersion...)
 	responseData = append(responseData, response.MaxVersion...)
+	responseData = append(responseData, response.TagBuffer...)
 	return responseData, nil
 }
 
