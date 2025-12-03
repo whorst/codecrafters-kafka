@@ -25,8 +25,8 @@ type ResponseData struct {
 	MaxVersion     []byte // Hard Coded to 2 bytes
 	TagBufferChild []byte // Hard Coded to 1 byte
 	// ================ End Array ==========================
-	TagBufferParent []byte // Hard Coded to 1 byte
 	ThrottleTimeMs  []byte // Hard Coded to 4 bytes
+	TagBufferParent []byte // Hard Coded to 1 byte
 }
 
 func (ResponseData ResponseData) GetMessageSize() int {
