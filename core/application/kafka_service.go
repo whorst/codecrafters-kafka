@@ -1,7 +1,6 @@
 package application
 
 import (
-	"encoding/binary"
 	"fmt"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
@@ -24,16 +23,11 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 	// TODO: Implement actual Kafka protocol parsing and handling
 	// For now, return the hardcoded response from the original code
 
-	errorCodeBuffer := make([]byte, 2)
-
 	fmt.Printf("Received Request Data %+v\n", req.Data)
 	correlationIdBytes := getCorrelationIdFromMessageHeader(req.Data)
 	requestApiVersionBytes := getRequestApiVersionFromMessageHeader(req.Data)
 	apiVersion := parseBytesToInt(requestApiVersionBytes)
-	fmt.Printf("Received API Version %v\n", apiVersion)
-	if apiVersion < 0 || apiVersion > 4 {
-		binary.BigEndian.PutUint16(errorCodeBuffer, uint16(35))
-	}
+	errorCodeBuffer := getErrorCode(apiVersion)
 
 	responseData := []byte{00, 00, 00, 00}
 	responseData = append(responseData, correlationIdBytes...)

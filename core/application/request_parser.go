@@ -1,5 +1,7 @@
 package application
 
+import "encoding/binary"
+
 func getCorrelationIdFromMessageHeader(dataBytes []byte) []byte {
 	return []byte{dataBytes[8], dataBytes[9], dataBytes[10], dataBytes[11]}
 }
@@ -22,4 +24,13 @@ func parseBytesToInt(dataBytes []byte) int {
 		}
 	}
 	return retVal
+}
+
+func getErrorCode(apiVersion int) []byte {
+	errorCodeBuffer := make([]byte, 2)
+	if apiVersion < 0 || apiVersion > 4 {
+		binary.BigEndian.PutUint16(errorCodeBuffer, uint16(35))
+	}
+
+	return errorCodeBuffer
 }
