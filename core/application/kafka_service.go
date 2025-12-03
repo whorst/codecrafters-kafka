@@ -23,11 +23,19 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 	// TODO: Implement actual Kafka protocol parsing and handling
 	// For now, return the hardcoded response from the original code
 
+	var errorCode byte
 	fmt.Printf("Received Request Data %+v\n", req.Data)
 	correlationIdBytes := getCorrelationIdFromMessageHeader(req.Data)
+	requestApiVersionBytes := getRequestApiVersionFromMessageHeader(req.Data)
+	apiVersion := parseBytesToInt(requestApiVersionBytes)
+	fmt.Printf("Received API Version %v\n", apiVersion)
+	if apiVersion < 0 || apiVersion > 4 {
+		errorCode = byte(35)
+	}
 
 	responseData := []byte{00, 00, 00, 00}
 	responseData = append(responseData, correlationIdBytes...)
+	responseData = append(responseData, errorCode)
 
 	fmt.Printf("Response Data %+v", responseData)
 	return domain.Response{
