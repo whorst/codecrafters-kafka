@@ -1,6 +1,8 @@
 package application
 
 import (
+	"fmt"
+
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/driving"
 )
@@ -20,7 +22,17 @@ func NewKafkaService() driving.KafkaHandler {
 func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error) {
 	// TODO: Implement actual Kafka protocol parsing and handling
 	// For now, return the hardcoded response from the original code
-	responseData := []byte{00, 00, 00, 02, 00, 00, 00, 07}
+
+	fmt.Printf("Received Request Data %+v", req.Data)
+
+	//var correlationId int32
+	//if err := binary.Read(bytes.NewReader(req.Data[4:8]), binary.BigEndian, &correlationId); err != nil {
+	//	fmt.Println("Failed to read correlationId:", err)
+	//	return domain.Response{}, fmt.Errorf("Could not read correlationId")
+	//}
+	//fmt.Println("Found correlation Id: ", correlationId)
+
+	responseData := []byte{00, 00, 00, 00, req.Data[4], req.Data[5], req.Data[6], req.Data[7]}
 
 	return domain.Response{
 		Data: responseData,
