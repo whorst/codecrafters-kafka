@@ -40,7 +40,7 @@ func (p *KafkaProtocolParser) EncodeResponse(response *parser.ResponseData) ([]b
 		response.ErrorCode = []byte{0x00, 0x00}
 	}
 
-	messageSizeBuffer := make([]byte, 4)
+	messageSizeBuffer := make([]byte, 0)
 
 	totalLength := len(response.CorrelationID)
 	totalLength += len(response.ErrorCode)
