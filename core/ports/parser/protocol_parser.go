@@ -20,7 +20,11 @@ type ResponseData struct {
 	ErrorCode          []byte // Error code (2 bytes)
 	ApiKeysArrayLength []byte // Hard Coded to 1 byte
 	// ================ Everything below will eventually be a part of an array ================
-	ApiKey     []byte // Hard Coded to 2 byte
-	MinVersion []byte // Hard coded to 2 bytes
-	MaxVersion []byte // Hard Coded to 2 bytes
+	ApiKey         []byte // Hard Coded to 2 byte
+	MinVersion     []byte // Hard coded to 2 bytes
+	MaxVersion     []byte // Hard Coded to 2 bytes
+	TagBufferChild []byte // Hard Coded to 1 byte
+	// ================ End Array ==========================
+	ThrottleTimeMs  []byte // Hard Coded to 4 bytes
+	TagBufferParent []byte // Hard Coded to 1 byte
 }

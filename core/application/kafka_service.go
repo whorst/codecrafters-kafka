@@ -41,6 +41,9 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 		ApiKey:             []byte{0x00, 0x12},
 		MinVersion:         []byte{0x00, 0x00},
 		MaxVersion:         []byte{0x00, 0x04},
+		TagBufferChild:     []byte{0x00},
+		ThrottleTimeMs:     []byte{0x00, 0x00, 0x00, 0x00},
+		TagBufferParent:    []byte{0x00},
 	}
 
 	// Encode the response using the protocol parser (infrastructure concern)
