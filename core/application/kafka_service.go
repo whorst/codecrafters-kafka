@@ -2,6 +2,7 @@ package application
 
 import (
 	"encoding/binary"
+	"fmt"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/driving"
@@ -63,5 +64,6 @@ func (s *KafkaService) determineErrorCode(apiVersion int) []byte {
 		// Business rule: Return error code 35 for unsupported API versions
 		binary.BigEndian.PutUint16(errorCodeBuffer, uint16(35))
 	}
+	fmt.Println(">>>>>>>>> ", errorCodeBuffer)
 	return errorCodeBuffer
 }
