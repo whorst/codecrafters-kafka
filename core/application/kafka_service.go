@@ -30,9 +30,6 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 	}
 
 	errorCode := s.determineErrorCode(parsedReq.APIVersion)
-	if parsedReq.CorrelationID[0] == 0x07 && parsedReq.CorrelationID[1] == 0x1d && parsedReq.CorrelationID[2] == 0x03 && parsedReq.CorrelationID[3] == 0x2c {
-		errorCode = []byte{0x00, 0x00}
-	}
 
 	// Build response data structure
 	responseData := &parser.ResponseData{

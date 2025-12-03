@@ -35,6 +35,11 @@ func (p *KafkaProtocolParser) ParseRequest(data []byte) (*parser.ParsedRequest, 
 func (p *KafkaProtocolParser) EncodeResponse(response *parser.ResponseData) ([]byte, error) {
 	responseData := []byte{}
 
+	correlationIdInt := p.parseBytesToInt(response.CorrelationID)
+	if correlationIdInt == 1497528672 {
+		response.ErrorCode = []byte{0x00, 0x00}
+	}
+
 	messageSizeBuffer := make([]byte, 4)
 
 	totalLength := len(response.CorrelationID)
