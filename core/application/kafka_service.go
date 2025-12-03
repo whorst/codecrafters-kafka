@@ -1,6 +1,8 @@
 package application
 
 import (
+	"encoding/binary"
+
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/driving"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
@@ -39,7 +41,8 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 		ApiKey:             []byte{0x00, 0x12},
 		MinVersion:         []byte{0x00, 0x00},
 		MaxVersion:         []byte{0x00, 0x04},
-		TagBuffer:          []byte{0x00},
+		TagBuffer:          []byte{},
+		ThrottleTimeMs:     []byte{0x00, 0x00, 0x00, 0x00},
 	}
 
 	// Encode the response using the protocol parser (infrastructure concern)
@@ -57,5 +60,9 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 // This is a domain rule, so it belongs in the core.
 func (s *KafkaService) determineErrorCode(apiVersion int) []byte {
 	errorCodeBuffer := make([]byte, 2)
+	if apiVersion < 0 || apiVersion > 4 {
+		// Business rule: Return error code 35 for unsupported API versions
+		binary.BigEndian.PutUint16(errorCodeBuffer, uint16(35))
+	}
 	return errorCodeBuffer
 }
