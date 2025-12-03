@@ -1,8 +1,6 @@
 package application
 
 import (
-	"encoding/binary"
-
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/driving"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
@@ -59,10 +57,10 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 // determineErrorCode contains the business logic for error code determination.
 // This is a domain rule, so it belongs in the core.
 func (s *KafkaService) determineErrorCode(apiVersion int) []byte {
-	errorCodeBuffer := make([]byte, 2)
+	errorCodeBuffer := []byte{0x00, 0x00}
 	if apiVersion < 0 || apiVersion > 4 {
 		// Business rule: Return error code 35 for unsupported API versions
-		binary.BigEndian.PutUint16(errorCodeBuffer, uint16(35))
+		errorCodeBuffer = []byte{0x00, 0x23}
 	}
 	return errorCodeBuffer
 }
