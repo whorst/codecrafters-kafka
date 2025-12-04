@@ -14,16 +14,20 @@ type ParsedRequest struct {
 	APIVersion    int
 }
 
+type ApiKey struct {
+	ApiKey         []byte // Hard Coded to 2 byte
+	MinVersion     []byte // Hard coded to 2 bytes
+	MaxVersion     []byte // Hard Coded to 2 bytes
+	TagBufferChild []byte // Hard Coded to 1 byte
+}
+
 // ResponseData represents the data needed to build a response
 type ResponseData struct {
 	CorrelationID      []byte // Correlation ID (Unknown)
 	ErrorCode          []byte // Error code (2 bytes)
 	ApiKeysArrayLength []byte // Hard Coded to 1 byte
 	// ================ Everything below will eventually be a part of an array ================
-	ApiKey         []byte // Hard Coded to 2 byte
-	MinVersion     []byte // Hard coded to 2 bytes
-	MaxVersion     []byte // Hard Coded to 2 bytes
-	TagBufferChild []byte // Hard Coded to 1 byte
+	ApiKeys []ApiKey
 	// ================ End Array ==========================
 	ThrottleTimeMs  []byte // Hard Coded to 4 bytes
 	TagBufferParent []byte // Hard Coded to 1 byte
@@ -33,10 +37,12 @@ func (ResponseData ResponseData) GetMessageSize() int {
 	totalLength := len(ResponseData.CorrelationID)
 	totalLength += len(ResponseData.ErrorCode)
 	totalLength += len(ResponseData.ApiKeysArrayLength)
-	totalLength += len(ResponseData.ApiKey)
-	totalLength += len(ResponseData.MinVersion)
-	totalLength += len(ResponseData.MaxVersion)
-	totalLength += len(ResponseData.TagBufferChild)
+	for _, apiKey := range ResponseData.ApiKeys {
+		totalLength += len(apiKey.ApiKey)
+		totalLength += len(apiKey.MinVersion)
+		totalLength += len(apiKey.MaxVersion)
+		totalLength += len(apiKey.TagBufferChild)
+	}
 	totalLength += len(ResponseData.ThrottleTimeMs)
 	totalLength += len(ResponseData.TagBufferParent)
 	return totalLength

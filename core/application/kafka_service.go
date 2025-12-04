@@ -1,6 +1,7 @@
 package application
 
 import (
+	"encoding/binary"
 	"fmt"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
@@ -37,13 +38,18 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 	responseData := &parser.ResponseData{
 		CorrelationID:      parsedReq.CorrelationID,
 		ErrorCode:          errorCode,
-		ApiKeysArrayLength: []byte{0x02},
-		ApiKey:             []byte{0x00, 0x12},
-		MinVersion:         []byte{0x00, 0x00},
-		MaxVersion:         []byte{0x00, 0x04},
-		TagBufferChild:     []byte{0x00},
-		ThrottleTimeMs:     []byte{0x00, 0x00, 0x00, 0x00},
-		TagBufferParent:    []byte{0x00},
+		ApiKeysArrayLength: []byte{0x03},
+		ApiKeys: []parser.ApiKey{
+			getDescribeTopicPartitionsApiKey(),
+			{
+				ApiKey:         []byte{0x00, 0x12},
+				MinVersion:     []byte{0x00, 0x00},
+				MaxVersion:     []byte{0x00, 0x04},
+				TagBufferChild: []byte{0x00},
+			},
+		},
+		ThrottleTimeMs:  []byte{0x00, 0x00, 0x00, 0x00},
+		TagBufferParent: []byte{0x00},
 	}
 
 	// Encode the response using the protocol parser (infrastructure concern)
@@ -72,4 +78,19 @@ func (s *KafkaService) determineErrorCode(apiVersion int) []byte {
 		errorCodeBuffer = []byte{0x00, 0x23}
 	}
 	return errorCodeBuffer
+}
+
+func getDescribeTopicPartitionsApiKey() parser.ApiKey {
+	return parser.ApiKey{
+		ApiKey:         int16ToBytes(75),
+		MinVersion:     []byte{0x00, 0x00},
+		MaxVersion:     []byte{0x00, 0x00},
+		TagBufferChild: []byte{0x00},
+	}
+}
+
+func int16ToBytes(i int16) []byte {
+	buf := make([]byte, 2)
+	binary.BigEndian.PutUint16(buf, uint16(i))
+	return buf
 }
