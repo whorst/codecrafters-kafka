@@ -69,7 +69,8 @@ func (p *KafkaProtocolParser) parseBytesToInt(dataBytes []byte) int {
 	}
 	if len(dataBytes) > 1 && len(dataBytes) < 5 {
 		for idx := range dataBytes {
-			retVal |= int(dataBytes[idx]) << 8
+			retVal = retVal << 8
+			retVal |= int(dataBytes[idx])
 		}
 	}
 	return retVal

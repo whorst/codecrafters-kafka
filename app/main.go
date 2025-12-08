@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/codecrafters-io/kafka-starter-go/core/application"
+	"github.com/codecrafters-io/kafka-starter-go/core/application/kafka_service"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/driving"
 	parser "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/parser"
 )
@@ -16,7 +16,7 @@ func main() {
 	// Create the parser adapter (protocol parser - infrastructure)
 	protocolParser := parser.NewKafkaProtocolParser()
 
-	kafkaService := application.NewKafkaService(protocolParser)
+	kafkaService := kafka_service.NewKafkaService(protocolParser)
 
 	tcpServer := driving.NewTCPServer(kafkaService, "0.0.0.0:9092")
 

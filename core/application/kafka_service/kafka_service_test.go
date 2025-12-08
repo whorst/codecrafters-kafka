@@ -1,4 +1,4 @@
-package application
+package kafka_service
 
 import (
 	"encoding/binary"
