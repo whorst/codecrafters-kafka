@@ -9,6 +9,10 @@ import (
 
 type ClusterMetadata struct{}
 
+func NewClusterMetadataParser() ClusterMetadata {
+	return ClusterMetadata{}
+}
+
 func (c ClusterMetadata) ParseClusterMetadataFileByTopicNames(topicNames []string) (error, clutser_metadata_port.ClusterMetadataLogResponse) {
 
 	data, err := os.ReadFile("/tmp/kraft-combined-logs/__cluster_metadata-0/00000000000000000000.log")
