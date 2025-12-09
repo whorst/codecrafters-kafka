@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/application/kafka_describe_topic_service"
+	"github.com/codecrafters-io/kafka-starter-go/core/application/kafka_service"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/driving"
 	parser "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/parser"
 )
@@ -14,13 +15,13 @@ func main() {
 	fmt.Println("Logs from your program will appear here!")
 
 	// Create the parser adapter (protocol parser - infrastructure)
-	//protocolParser := parser.NewKafkaProtocolParser()
-	//kafkaService := kafka_service.NewKafkaService(protocolParser)
+	protocolParser := parser.NewKafkaProtocolParser()
+	kafkaService := kafka_service.NewKafkaService(protocolParser)
 
 	protocolParserDescribeTopic := parser.NewKafkaProtocolParserDescribeTopic()
 	kafkaServiceDescribeTopic := kafka_describe_topic_service.NewKafkaDescribeTopicService(protocolParserDescribeTopic)
 
-	tcpServer := driving.NewTCPServer(kafkaServiceDescribeTopic, "0.0.0.0:9092")
+	tcpServer := driving.NewTCPServer(kafkaService, kafkaServiceDescribeTopic, "0.0.0.0:9092")
 
 	// Start the server
 	if err := tcpServer.Start(); err != nil {
