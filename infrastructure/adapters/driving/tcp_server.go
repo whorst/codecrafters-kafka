@@ -14,17 +14,15 @@ import (
 // Rule 2: Adapters use the ports defined by the core.
 // Rule 3: Dependencies point inward - this adapter depends on the core port.
 type TCPServer struct {
-	handler              driving.KafkaHandler
-	handlerDescribeTopic driving.KafkaHandler
-	port                 string
+	handler driving.KafkaHandler
+	port    string
 }
 
 // NewTCPServer creates a new TCP server adapter
-func NewTCPServer(handler driving.KafkaHandler, handlerDescribeTopic driving.KafkaHandler, port string) *TCPServer {
+func NewTCPServer(handler driving.KafkaHandler, port string) *TCPServer {
 	return &TCPServer{
-		handler:              handler,
-		handlerDescribeTopic: handlerDescribeTopic,
-		port:                 port,
+		handler: handler,
+		port:    port,
 	}
 }
 
@@ -67,15 +65,10 @@ func (s *TCPServer) handleConnection(conn net.Conn) {
 			Data: buff[:n],
 		}
 
-		resp, err := domain.Response{}, nil
-
 		// Call the driving port (core business logic)
 		// Rule 3: Adapter depends on and uses the port, pointing inward
-		if len(req.Data) <= 42 {
-			resp, err = s.handler.HandleRequest(req)
-		} else {
-			resp, err = s.handlerDescribeTopic.HandleRequest(req)
-		}
+		// The handler will route to the appropriate service based on the API key
+		resp, err := s.handler.HandleRequest(req)
 		if err != nil {
 			fmt.Printf("Error handling request: %v\n", err)
 			break
