@@ -71,7 +71,7 @@ func (s *TCPServer) handleConnection(conn net.Conn) {
 
 		// Call the driving port (core business logic)
 		// Rule 3: Adapter depends on and uses the port, pointing inward
-		if len(req.Data) > 42 {
+		if len(req.Data) <= 42 {
 			resp, err = s.handler.HandleRequest(req)
 		} else {
 			resp, err = s.handlerDescribeTopic.HandleRequest(req)
