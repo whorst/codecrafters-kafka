@@ -20,6 +20,8 @@ func (c ClusterMetadata) ParseClusterMetadataFileByTopicNames(topicNames []strin
 		return err, clutser_metadata_port.ClusterMetadataLogResponse{}
 	}
 
+	fmt.Printf("1. Raw Bytes (Hexadecimal, separated by spaces):\n% X\n\n", data)
+
 	fmt.Printf("2. Raw Bytes (Hexadecimal, continuous block):\n%X\n\n", data)
 
 	return nil, clutser_metadata_port.ClusterMetadataLogResponse{}
