@@ -69,6 +69,7 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	if err != nil {
 		return domain.Response{}, err
 	}
+	fmt.Printf("This is the response %+v \n", encodedResponse)
 
 	return domain.Response{
 		Data: encodedResponse,
