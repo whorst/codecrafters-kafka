@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
+	cluster_metadata_port "github.com/codecrafters-io/kafka-starter-go/core/ports/cluster_metadata"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/driving"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
 )
@@ -13,13 +14,15 @@ import (
 // This is the application core that contains the business logic.
 // Rule 2: The application implements the port defined by the core.
 type KafkaDescribeService struct {
-	parser parser.ProtocolParserDescribeTopic
+	parser                  parser.ProtocolParserDescribeTopic
+	cluster_metadata_parser cluster_metadata_port.ClusterMetadataParser
 }
 
 // NewKafkaService creates a new Kafka service that implements the driving port
-func NewKafkaDescribeTopicService(parser parser.ProtocolParserDescribeTopic) driving.KafkaHandler {
+func NewKafkaDescribeTopicService(parser parser.ProtocolParserDescribeTopic, metadata_parser cluster_metadata_port.ClusterMetadataParser) driving.KafkaHandler {
 	return &KafkaDescribeService{
-		parser: parser,
+		parser:                  parser,
+		cluster_metadata_parser: metadata_parser,
 	}
 }
 
@@ -37,6 +40,8 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	}
 
 	responseInfo := []parser.ResponseDataDescribeTopicInfo{}
+
+	s.cluster_metadata_parser.ParseClusterMetadataFileByTopicNames([]string{""})
 
 	for _, topicData := range parsedReq.Topics {
 		newInfo := parser.ResponseDataDescribeTopicInfo{
@@ -74,15 +79,6 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	return domain.Response{
 		Data: encodedResponse,
 	}, nil
-}
-
-func getDescribeTopicPartitionsApiKey() parser.ApiKey {
-	return parser.ApiKey{
-		ApiKey:         int16ToBytes(75),
-		MinVersion:     []byte{0x00, 0x00},
-		MaxVersion:     []byte{0x00, 0x00},
-		TagBufferChild: []byte{0x00},
-	}
 }
 
 func int16ToBytes(i int16) []byte {

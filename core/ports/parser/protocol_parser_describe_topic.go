@@ -69,7 +69,7 @@ func (r ResponseDataDescribeTopic) GetMessageSize() int {
 		total += 1 // How many bytes is the int length of the topic name?
 		total += len(topic.TopicNameInfo.TopicNameBytes)
 		total += len(topic.TopicId)
-		total += 1 //represent topic.isInternal
+		total += len(topic.IsInternal) //represent topic.isInternal
 		total += len(topic.Partitions)
 		total += len(topic.TopicAuthorizedOperations)
 		total += len(topic.TagBuffer)
