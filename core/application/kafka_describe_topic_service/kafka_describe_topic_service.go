@@ -2,6 +2,7 @@ package kafka_describe_topic_service
 
 import (
 	"encoding/binary"
+	"fmt"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/driving"
@@ -27,6 +28,8 @@ var HardCodedTopicId = []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x
 // HandleRequest processes a Kafka request and returns a response.
 // This is where the core business logic lives.
 func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Response, error) {
+	fmt.Printf("This is the request %+v \n", req.Data)
+
 	// Parse the request using the protocol parser (infrastructure concern)
 	parsedReq, err := s.parser.ParseRequest(req.Data)
 	if err != nil {

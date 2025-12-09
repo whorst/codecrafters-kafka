@@ -75,13 +75,17 @@ func (p *KafkaProtocolParserDescribeTopic) EncodeResponse(response *parser.Respo
 
 	// Convert this to a varint
 	numberOfTopics := byte(uint8(len(response.ResponseDataDescribeTopicBody.Topics) + 1)) // The responseData number of topics should be able to be represented by one byte
-	responseData = append(responseData, numberOfTopics)
+	numberOfTopicsVarInt := p.bytesToVarInt([]byte{numberOfTopics})
+	responseData = append(responseData, numberOfTopicsVarInt...)
 
 	for _, topic := range response.Topics {
 		responseData = append(responseData, topic.ErrorCode...)
 
 		// Convert this to a varint
-		responseData = append(responseData, byte(uint8(len(topic.TopicNameInfo.TopicNameBytes)+1)))
+		topicNameBytes := []byte{byte(uint8(len(topic.TopicNameInfo.TopicNameBytes) + 1))}
+		topicNameLengthVarInt := p.bytesToVarInt(topicNameBytes)
+
+		responseData = append(responseData, topicNameLengthVarInt...)
 		responseData = append(responseData, topic.TopicNameInfo.TopicNameBytes...)
 		responseData = append(responseData, topic.TopicId...)
 		responseData = append(responseData, topic.IsInternal...)
@@ -134,4 +138,49 @@ func (p *KafkaProtocolParserDescribeTopic) readVarInt(offset int, header []byte)
 		numberOfBytesRead += 1
 	}
 	return int(total), numberOfBytesRead
+}
+
+// intToVarInt converts an integer to varint-encoded bytes.
+// Varints use 7 bits per byte for the value, with the MSB (0x80) indicating
+// whether there are more bytes to follow.
+func (p *KafkaProtocolParserDescribeTopic) intToVarInt(value int) []byte {
+	return p.uint64ToVarInt(uint64(value))
+}
+
+// uint64ToVarInt converts a uint64 to varint-encoded bytes
+func (p *KafkaProtocolParserDescribeTopic) uint64ToVarInt(value uint64) []byte {
+	if value == 0 {
+		return []byte{0x00}
+	}
+
+	var result []byte
+	for value > 0 {
+		// Extract the lower 7 bits
+		byteValue := byte(value & 0x7f)
+		value >>= 7
+
+		// If there are more bytes to follow, set the MSB
+		if value > 0 {
+			byteValue |= 0x80
+		}
+
+		result = append(result, byteValue)
+	}
+
+	// Reverse the result because varints are encoded with most significant byte first
+	// (readVarInt reads the first byte and shifts left, so first byte is most significant)
+	for i, j := 0, len(result)-1; i < j; i, j = i+1, j-1 {
+		result[i], result[j] = result[j], result[i]
+	}
+
+	return result
+}
+
+// bytesToVarInt converts an array of bytes (representing an integer) to varint-encoded bytes.
+// The input bytes are interpreted as a big-endian integer.
+func (p *KafkaProtocolParserDescribeTopic) bytesToVarInt(data []byte) []byte {
+	// Convert bytes to integer first
+	intValue := p.parseBytesToInt(data)
+	// Then convert to varint
+	return p.intToVarInt(intValue)
 }

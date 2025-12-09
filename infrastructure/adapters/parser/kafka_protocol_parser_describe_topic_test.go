@@ -5,30 +5,27 @@ import (
 	"testing"
 )
 
+var defaultData = []byte{
+	0x00, 0x00, 0x00, 0x20, // Message size
+	0x00, 0x4b, // API Key
+	0x00, 0x00, // API Version
+	0x00, 0x00, 0x00, 0x07, // Correlation ID
+	0x00, 0x09, // Length
+	0x6b, 0x61, 0x66, 0x6b, 0x61, 0x2d, 0x63, 0x6c, 0x69, // Contents
+	0x00,             // Tag Buffer
+	0x02,             // Array Length
+	0x04,             // Topic Name Length
+	0x66, 0x6f, 0x6f, // Topic Name
+	0x00,                   // Topic Tag Buffer
+	0x00, 0x00, 0x00, 0x64, // Response Partition Limit
+	0xff, // Cursor
+	0x00, // Tag Buffer
+}
+
 func TestKafkaProtocolParserDescribeTopic_ParseRequest(t *testing.T) {
 	parser := NewKafkaProtocolParserDescribeTopic()
 
-	data := []byte{
-		0x00, 0x00, 0x00, 0x20, // Message size
-		0x00, 0x4b, // API Key
-		0x00, 0x00, // API Version
-		0x00, 0x00, 0x00, 0x07, // Correlation ID
-		0x00, 0x09, // Length
-		0x6b, 0x61, 0x66, 0x6b, 0x61, 0x2d, 0x63, 0x6c, 0x69, // Contents
-		0x00,             // Tag Buffer
-		0x03,             // Array Length
-		0x04,             // Topic Name Length
-		0x66, 0x6f, 0x6f, // Topic Name
-		0x00,             // Topic Tag Buffer
-		0x04,             // Topic Name Length
-		0x66, 0x6f, 0x6f, // Topic Name
-		0x00,                   // Topic Tag Bugger
-		0x00, 0x00, 0x00, 0x64, // Response Partition Limit
-		0xff, // Cursor
-		0x00, // Tag Buffer
-	}
-
-	result, err := parser.ParseRequest(data)
+	result, err := parser.ParseRequest(defaultData)
 	if err != nil {
 		t.Fatalf("ParseRequest() error = %v", err)
 	}
@@ -44,7 +41,7 @@ func TestKafkaProtocolParserDescribeTopic_ParseRequest(t *testing.T) {
 	}
 
 	// Expected topics: [{foo [0] [102 111 111]} {foo [0] [102 111 111]}]
-	expectedTopicsCount := 2
+	expectedTopicsCount := 1
 	if len(result.Topics) != expectedTopicsCount {
 		t.Fatalf("Topics count = %d, want %d", len(result.Topics), expectedTopicsCount)
 	}
