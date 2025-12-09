@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
+	"github.com/codecrafters-io/kafka-starter-go/infrastructure/common"
 )
 
 // KafkaProtocolParser is a parser adapter that implements the ProtocolParser port.
@@ -24,7 +25,7 @@ func (p *KafkaProtocolParser) ParseRequest(data []byte) (*parser.ParsedRequest, 
 
 	correlationID := []byte{data[8], data[9], data[10], data[11]}
 	apiVersionBytes := []byte{data[6], data[7]}
-	apiVersion := p.parseBytesToInt(apiVersionBytes)
+	apiVersion := common.ParseBytesToInt(apiVersionBytes)
 
 	return &parser.ParsedRequest{
 		CorrelationID: correlationID,
@@ -35,7 +36,7 @@ func (p *KafkaProtocolParser) ParseRequest(data []byte) (*parser.ParsedRequest, 
 func (p *KafkaProtocolParser) EncodeResponse(response *parser.ResponseData) ([]byte, error) {
 	responseData := []byte{}
 
-	correlationIdInt := p.parseBytesToInt(response.CorrelationID)
+	correlationIdInt := common.ParseBytesToInt(response.CorrelationID)
 	if correlationIdInt == 1497528672 {
 		response.ErrorCode = []byte{0x00, 0x00}
 	}
@@ -57,23 +58,6 @@ func (p *KafkaProtocolParser) EncodeResponse(response *parser.ResponseData) ([]b
 	responseData = append(responseData, response.ThrottleTimeMs...)
 	responseData = append(responseData, response.TagBufferParent...)
 	return responseData, nil
-}
-
-func (p *KafkaProtocolParser) parseBytesToInt(dataBytes []byte) int {
-	var retVal int
-	if len(dataBytes) > 5 {
-		panic("Input too Large")
-	}
-	if len(dataBytes) == 1 {
-		retVal = int(dataBytes[0])
-	}
-	if len(dataBytes) > 1 && len(dataBytes) < 5 {
-		for idx := range dataBytes {
-			retVal = retVal << 8
-			retVal |= int(dataBytes[idx])
-		}
-	}
-	return retVal
 }
 
 // ErrInvalidRequest is returned when the request data is invalid
