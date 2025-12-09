@@ -37,13 +37,13 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 
 	for _, topicData := range parsedReq.Topics {
 		newInfo := parser.ResponseDataDescribeTopicInfo{
-			ErrorCode:                 []byte{0x00, 0x03},             // []byte //2 bytes
-			TopicName:                 topicData.TopicName,            // string // From the request?
-			TopicId:                   HardCodedTopicId,               // string // UUID
-			IsInternal:                []byte{0x00},                   // []byte // 1 byte, hard coded to 00
-			Partitions:                []byte{0x01},                   // []byte // 1 byte, hard coded to 01
-			TopicAuthorizedOperations: []byte{0x00, 0x00, 0x00, 0x00}, // []byte // 4 bytes, hard coded to 00
-			TagBufferHeader:           []byte{0x00},                   // []byte // Hard Coded to 1 byte, 00
+			ErrorCode:                 []byte{0x00, 0x03},                                                                             // []byte //2 bytes
+			TopicNameInfo:             parser.TopicNameInfo{TopicName: topicData.TopicName, TopicNameBytes: topicData.TopicNameBytes}, // string // From the request?
+			TopicId:                   HardCodedTopicId,                                                                               // string // UUID
+			IsInternal:                []byte{0x00},                                                                                   // []byte // 1 byte, hard coded to 00
+			Partitions:                []byte{0x01},                                                                                   // []byte // 1 byte, hard coded to 01
+			TopicAuthorizedOperations: []byte{0x00, 0x00, 0x00, 0x00},                                                                 // []byte // 4 bytes, hard coded to 00
+			TagBuffer:                 []byte{0x00},                                                                                   // []byte // Hard Coded to 1 byte, 00
 		}
 		responseInfo = append(responseInfo, newInfo)
 	}

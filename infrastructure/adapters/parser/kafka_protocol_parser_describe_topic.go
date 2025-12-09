@@ -62,39 +62,36 @@ func (p *KafkaProtocolParserDescribeTopic) ParseRequest(data []byte) (*parser.Pa
 func (p *KafkaProtocolParserDescribeTopic) EncodeResponse(response *parser.ResponseDataDescribeTopic) ([]byte, error) {
 	responseData := []byte{}
 
-	//correlationIdInt := p.parseBytesToInt(response.CorrelationID)
-	//if correlationIdInt == 1497528672 {
-	//	response.ErrorCode = []byte{0x00, 0x00}
-	//}
-
-	//messageSizeBuffer := make([]byte, 4)
+	messageSizeBuffer := make([]byte, 4)
 	//
-	//binary.BigEndian.PutUint32(messageSizeBuffer, uint32(response.GetMessageSize()))
+	binary.BigEndian.PutUint32(messageSizeBuffer, uint32(response.GetMessageSize()))
 	//
-	//responseData = append(responseData, messageSizeBuffer...)
-	//responseData = append(responseData, response.CorrelationID...)
-	//responseData = append(responseData, response.TagBufferHeader...)
-	//responseData = append(responseData, response.ThrottleTimeMs...)
-	//for _, topic := range response.Topics {
-	//	responseData = append(responseData, topic.ErrorCode...)
-	//	responseData = append(responseData, topic.TopicName...)                 // Have to convert to compact string
-	//	responseData = append(responseData, topic.TopicId...)                   // Convert to a 0 value 16 bytes
-	//	responseData = append(responseData, topic.IsInternal...)                // Convert to a 0 value 1 bytes
-	//	responseData = append(responseData, topic.Partitions...)                // This should be an actual array at some point
-	//	responseData = append(responseData, topic.TopicAuthorizedOperations...) // This should be an actual array at some point
-	//	responseData = append(responseData, topic.TagBufferHeader...)           // This should be an actual array at some point
-	//}
-	//responseData = append(responseData, response.NextCursor...)    // This should be ff
-	//responseData = append(responseData, response.TagBufferBody...) // This should be 00
+	responseData = append(responseData, messageSizeBuffer...)
 
-	//responseData = append(responseData, response.ApiKeysArrayLength...)
-	//for _, apiKey := range response.ApiKeys {
-	//	responseData = append(responseData, apiKey.ApiKey...)
-	//	responseData = append(responseData, apiKey.MinVersion...)
-	//	responseData = append(responseData, apiKey.MaxVersion...)
-	//	responseData = append(responseData, apiKey.TagBufferChild...)
-	//}
-	//responseData = append(responseData, response.TagBufferParent...)
+	responseData = append(responseData, response.CorrelationID...)
+	responseData = append(responseData, response.ResponseDataDescribeTopicHeader.TagBufferHeader...)
+
+	responseData = append(responseData, response.ResponseDataDescribeTopicBody.ThrottleTimeMs...)
+
+	// Convert this to a varint
+	numberOfTopics := byte(uint8(len(response.ResponseDataDescribeTopicBody.Topics) + 1)) // The responseData number of topics should be able to be represented by one byte
+	responseData = append(responseData, numberOfTopics)
+
+	for _, topic := range response.Topics {
+		responseData = append(responseData, topic.ErrorCode...)
+
+		// Convert this to a varint
+		responseData = append(responseData, byte(uint8(len(topic.TopicNameInfo.TopicNameBytes)+1)))
+		responseData = append(responseData, topic.TopicNameInfo.TopicNameBytes...)
+		responseData = append(responseData, topic.TopicId...)
+		responseData = append(responseData, topic.IsInternal...)
+		responseData = append(responseData, topic.Partitions...)
+		responseData = append(responseData, topic.TopicAuthorizedOperations...)
+		responseData = append(responseData, topic.TagBuffer...)
+	}
+	responseData = append(responseData, response.NextCursor...)
+	responseData = append(responseData, response.TagBufferBody...)
+
 	return responseData, nil
 }
 
