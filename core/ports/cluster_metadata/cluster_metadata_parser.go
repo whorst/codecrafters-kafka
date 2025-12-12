@@ -12,6 +12,7 @@ type ClusterMetadataParser interface {
 type ClusterMetadataLogResponse struct {
 	TopicUUIDTopicMetadataInfoMap map[string]*TopicMetadataInfo
 	TopicUUIDPartitionMetadataMap map[string][]*partition_metadata.PartitionMetadata
+	TopicNameTopicUuidMap         map[string]string
 }
 
 type TopicMetadataInfo struct {

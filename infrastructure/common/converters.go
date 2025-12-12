@@ -2,10 +2,10 @@ package common
 
 import "encoding/binary"
 
-// intToVarInt converts an integer to varint-encoded bytes.
+// IntToVarInt converts an integer to varint-encoded bytes.
 // Varints use 7 bits per byte for the value, with the MSB (0x80) indicating
 // whether there are more bytes to follow.
-func intToVarInt(value int) []byte {
+func IntToVarInt(value int) []byte {
 	return uint64ToVarInt(uint64(value))
 }
 
@@ -44,7 +44,7 @@ func BytesToVarInt(data []byte) []byte {
 	// Convert bytes to integer first
 	intValue := BytesToInt(data)
 	// Then convert to varint
-	return intToVarInt(intValue)
+	return IntToVarInt(intValue)
 }
 
 func BytesToInt(dataBytes []byte) int {

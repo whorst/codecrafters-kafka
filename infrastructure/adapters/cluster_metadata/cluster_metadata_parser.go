@@ -23,6 +23,7 @@ func (c *ClusterMetadata) ParseClusterMetadataFileByTopicNames(topicNames []stri
 	c.ClusterMetadataLogResponse = &clutser_metadata_port.ClusterMetadataLogResponse{}
 	c.ClusterMetadataLogResponse.TopicUUIDTopicMetadataInfoMap = make(map[string]*clutser_metadata_port.TopicMetadataInfo)
 	c.ClusterMetadataLogResponse.TopicUUIDPartitionMetadataMap = make(map[string][]*partition_metadata.PartitionMetadata)
+	c.ClusterMetadataLogResponse.TopicNameTopicUuidMap = make(map[string]string)
 
 	// 1. Parse a record batch
 	// 2. Find the Records Array
@@ -185,6 +186,8 @@ func (c *ClusterMetadata) processTopicRecord(data []byte, offset int) {
 		TopicAuthorizedOperations: []byte{0x00, 0x00, 0x00, 0x00},
 		TagBuffer:                 []byte{0x00},
 	}
+
+	c.TopicNameTopicUuidMap[topicNameString] = hex.EncodeToString(topicUuid)
 
 	c.ClusterMetadataLogResponse.TopicUUIDTopicMetadataInfoMap[hex.EncodeToString(topicUuid)] = &tmi
 	_ = version

@@ -1,6 +1,7 @@
 package kafka_describe_topic_service
 
 import (
+	"encoding/binary"
 	"fmt"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
@@ -33,9 +34,13 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	fmt.Printf("This is the request %+v \n", req.Data)
 
 	// Parse the request using the protocol parser (infrastructure concern)
-	parsedReq, err := s.parser.ParseRequest(req.Data)
+	parsedReqs, err := s.parser.ParseRequest(req.Data)
 	if err != nil {
 		return domain.Response{}, err
+	}
+	topicsToFind := map[string]string{}
+	for _, parsedRequest := range parsedReqs.Topics {
+		topicsToFind[parsedRequest.TopicName] = parsedRequest.TopicName
 	}
 
 	topicResponseInfo := []parser.ResponseDataDescribeTopicInfo{}
@@ -54,6 +59,9 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	//responseData := getOriginalResponse(parsedReq, topicResponseInfo)
 
 	for _, topicData := range clusterMetadata.TopicUUIDTopicMetadataInfoMap {
+		if _, exists := topicsToFind[topicData.TopicNameInfo.TopicName]; !exists {
+			continue
+		}
 		newInfo := parser.ResponseDataDescribeTopicInfo{
 			ErrorCode:                 []byte{0x00, 0x00},             // []byte //2 bytes
 			TopicNameInfo:             topicData.TopicNameInfo,        // string // From the request?
@@ -68,7 +76,7 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 
 	responseData := &parser.ResponseDataDescribeTopic{
 		ResponseDataDescribeTopicHeader: parser.ResponseDataDescribeTopicHeader{
-			CorrelationID:   parsedReq.CorrelationIdBytes,
+			CorrelationID:   parsedReqs.CorrelationIdBytes,
 			TagBufferHeader: []byte{0x00},
 		},
 		ResponseDataDescribeTopicBody: parser.ResponseDataDescribeTopicBody{
@@ -81,6 +89,12 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 
 	// Encode the response using the protocol parser (infrastructure concern)
 	encodedResponse, err := s.parser.EncodeResponse(responseData)
+	messageSizeBuffer := make([]byte, 4)
+	//
+	binary.BigEndian.PutUint32(messageSizeBuffer, uint32(len(encodedResponse)))
+	//
+	encodedResponse = append(messageSizeBuffer, encodedResponse...)
+
 	if err != nil {
 		return domain.Response{}, err
 	}

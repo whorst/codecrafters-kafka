@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"encoding/binary"
-
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/partition_metadata"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/common"
@@ -61,13 +59,7 @@ func (p *KafkaProtocolParserDescribeTopic) ParseRequest(data []byte) (*parser.Pa
 
 func (p *KafkaProtocolParserDescribeTopic) EncodeResponse(response *parser.ResponseDataDescribeTopic) ([]byte, error) {
 	responseData := []byte{}
-
-	messageSizeBuffer := make([]byte, 4)
-	//
-	binary.BigEndian.PutUint32(messageSizeBuffer, uint32(response.GetMessageSize()))
-	//
-	responseData = append(responseData, messageSizeBuffer...)
-
+	
 	responseData = append(responseData, response.CorrelationID...)
 	responseData = append(responseData, response.ResponseDataDescribeTopicHeader.TagBufferHeader...)
 
@@ -89,7 +81,7 @@ func (p *KafkaProtocolParserDescribeTopic) EncodeResponse(response *parser.Respo
 		responseData = append(responseData, topic.TopicNameInfo.TopicNameBytes...)
 		responseData = append(responseData, topic.TopicId...)
 		responseData = append(responseData, topic.IsInternal...)
-		responseData = append(responseData, topic.Partitions...)
+		responseData = append(responseData, p.encodeAllPartitions(topic.Partitions)...)
 		responseData = append(responseData, topic.TopicAuthorizedOperations...)
 		responseData = append(responseData, topic.TagBuffer...)
 	}
@@ -102,14 +94,30 @@ func (p *KafkaProtocolParserDescribeTopic) EncodeResponse(response *parser.Respo
 func (p *KafkaProtocolParserDescribeTopic) encodeAllPartitions(allPartitionMetadata []*partition_metadata.PartitionMetadata) []byte {
 	retVal := []byte{}
 
+	retVal = append(retVal, common.IntToVarInt(len(allPartitionMetadata)+1)...)
+
 	for _, pmd := range allPartitionMetadata {
-		retval := append(retVal, p.encodePartition(pmd)...)
+		partitionBytes := append(retVal, p.encodePartition(pmd)...)
+		retVal = append(retVal, partitionBytes...)
 	}
 
-	return []byte{}
+	return retVal
 }
 
-func (p *KafkaProtocolParserDescribeTopic) encodePartition(*partition_metadata.PartitionMetadata) []byte {
-
-	return []byte{}
+func (p *KafkaProtocolParserDescribeTopic) encodePartition(pm *partition_metadata.PartitionMetadata) []byte {
+	result := []byte{}
+	result = append(result, pm.ErrorCode...)
+	result = append(result, pm.PartitionIndex...)
+	result = append(result, pm.LeaderId...)
+	result = append(result, pm.LeaderEpoch...)
+	result = append(result, pm.ReplicaNodes.ArrayLength...)
+	// Replica Node array (each node is 4 bytes)
+	result = append(result, pm.ReplicaNodes.ReplicaNodesArray...)
+	result = append(result, pm.IsrNodes.ArrayLength...)
+	result = append(result, pm.IsrNodes.IsrNodeArray...)
+	result = append(result, pm.EligibleLeaderReplicasArrayLength...)
+	result = append(result, pm.LastKnownElrArrayLength...)
+	result = append(result, pm.OfflineReplicasArrayLength...)
+	result = append(result, pm.TagBuffer...)
+	return result
 }
