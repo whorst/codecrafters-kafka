@@ -24,19 +24,19 @@ func (p *KafkaProtocolParserDescribeTopic) ParseRequest(data []byte) (*parser.Pa
 
 	correlationID := []byte{data[8], data[9], data[10], data[11]}
 
-	clientIdLength := common.ParseBytesToInt(data[12:14])
+	clientIdLength := common.BytesToInt(data[12:14])
 	clientId := data[14 : 14+clientIdLength]
 	_ = clientId
 
 	arrayLengthOffset := 14 + clientIdLength + 1 //We add + 1 here to skip the tags bugger that comes after the clientId
-	topicArrayLength, totalBytesRead := common.ReadVarInt(arrayLengthOffset, data)
+	topicArrayLength, totalBytesRead := common.ReadVarIntUnsigned(arrayLengthOffset, data)
 	topicArrayLength -= 1 // This always will always arrive with 1 added to it for some reason
 
 	topicArrayOffset := arrayLengthOffset + totalBytesRead
 	parsedTopics := []parser.ParsedTopic{}
 
 	for range topicArrayLength {
-		topicNameLength, newTotalBytesRead := common.ReadVarInt(topicArrayOffset, data)
+		topicNameLength, newTotalBytesRead := common.ReadVarIntUnsigned(topicArrayOffset, data)
 		topicNameLength -= 1 // This always will always arrive with 1 added to it for some reaso
 		topicArrayOffset += newTotalBytesRead
 

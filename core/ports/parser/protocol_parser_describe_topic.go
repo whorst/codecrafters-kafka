@@ -40,6 +40,7 @@ type ResponseDataDescribeTopicInfo struct {
 	IsInternal                []byte        // 1 byte, hard coded to 00
 	Partitions                []byte        // 1 byte, hard coded to 01
 	TopicAuthorizedOperations []byte        // 4 bytes, hard coded to 00
+	NextCursor                []byte        // 1 byte, hard coded to 0xff
 	TagBuffer                 []byte        // Hard Coded to 1 byte, 00
 }
 

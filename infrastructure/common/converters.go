@@ -1,5 +1,7 @@
 package common
 
+import "encoding/binary"
+
 // intToVarInt converts an integer to varint-encoded bytes.
 // Varints use 7 bits per byte for the value, with the MSB (0x80) indicating
 // whether there are more bytes to follow.
@@ -40,14 +42,14 @@ func uint64ToVarInt(value uint64) []byte {
 // The input bytes are interpreted as a big-endian integer.
 func BytesToVarInt(data []byte) []byte {
 	// Convert bytes to integer first
-	intValue := ParseBytesToInt(data)
+	intValue := BytesToInt(data)
 	// Then convert to varint
 	return intToVarInt(intValue)
 }
 
-func ParseBytesToInt(dataBytes []byte) int {
+func BytesToInt(dataBytes []byte) int {
 	var retVal int
-	if len(dataBytes) > 5 {
+	if len(dataBytes) > 10 {
 		panic("Input too Large")
 	}
 	if len(dataBytes) == 1 {
@@ -60,4 +62,10 @@ func ParseBytesToInt(dataBytes []byte) int {
 		}
 	}
 	return retVal
+}
+
+func IntToFourBytes(value int) []byte {
+	result := make([]byte, 4)
+	binary.BigEndian.PutUint32(result, uint32(value))
+	return result
 }

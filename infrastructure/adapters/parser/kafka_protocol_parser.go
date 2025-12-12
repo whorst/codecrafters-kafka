@@ -25,7 +25,7 @@ func (p *KafkaProtocolParser) ParseRequest(data []byte) (*parser.ParsedRequest, 
 
 	correlationID := []byte{data[8], data[9], data[10], data[11]}
 	apiVersionBytes := []byte{data[6], data[7]}
-	apiVersion := common.ParseBytesToInt(apiVersionBytes)
+	apiVersion := common.BytesToInt(apiVersionBytes)
 
 	return &parser.ParsedRequest{
 		CorrelationID: correlationID,
@@ -36,7 +36,7 @@ func (p *KafkaProtocolParser) ParseRequest(data []byte) (*parser.ParsedRequest, 
 func (p *KafkaProtocolParser) EncodeResponse(response *parser.ResponseData) ([]byte, error) {
 	responseData := []byte{}
 
-	correlationIdInt := common.ParseBytesToInt(response.CorrelationID)
+	correlationIdInt := common.BytesToInt(response.CorrelationID)
 	if correlationIdInt == 1497528672 {
 		response.ErrorCode = []byte{0x00, 0x00}
 	}
