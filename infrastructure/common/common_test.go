@@ -6,15 +6,56 @@ import (
 	"testing"
 )
 
-//func Test_ReadVarIntSigned(t *testing.T) {
-//
-//	offset := 0
-//	data := []byte{0x90, 0x01}
-//
-//	result, totalBytesRead := ReadVarIntSigned(offset, data)
-//
-//	fmt.Println(result, totalBytesRead)
-//}
+// Test_ReadVarIntUnsigned tests the unsigned varint decoding
+func Test_ReadVarIntUnsigned(t *testing.T) {
+	tests := []struct {
+		name          string
+		data          []byte
+		offset        int
+		expectedValue int
+		expectedBytes int
+		description   string
+	}{
+		{
+			name:          "single byte value",
+			data:          []byte{0x02},
+			offset:        0,
+			expectedValue: 2,
+			expectedBytes: 1,
+			description:   "Single byte should decode correctly",
+		},
+		{
+			name:          "two byte value 144",
+			data:          []byte{0x90, 0x01},
+			offset:        0,
+			expectedValue: 144,
+			expectedBytes: 2,
+			description:   "0x90 0x01 should decode to 144 (16 | (1 << 7))",
+		},
+		{
+			name:          "two byte value 128",
+			data:          []byte{0x80, 0x01},
+			offset:        0,
+			expectedValue: 128,
+			expectedBytes: 2,
+			description:   "0x80 0x01 should decode to 128 (0 | (1 << 7))",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			value, bytesRead := ReadVarIntUnsigned(tt.offset, tt.data)
+
+			if value != tt.expectedValue {
+				t.Errorf("%s: expected value %d, got %d", tt.description, tt.expectedValue, value)
+			}
+
+			if bytesRead != tt.expectedBytes {
+				t.Errorf("%s: expected %d bytes read, got %d", tt.description, tt.expectedBytes, bytesRead)
+			}
+		})
+	}
+}
 
 func Test_ReadVarIntSignedTwo(t *testing.T) {
 	tests := []struct {
@@ -26,14 +67,6 @@ func Test_ReadVarIntSignedTwo(t *testing.T) {
 		description   string
 	}{
 		// Zero
-		//{
-		//	name:          "zero",
-		//	data:          []byte{0x90, 0x01},
-		//	offset:        0,
-		//	expectedValue: 72,
-		//	expectedBytes: 1,
-		//	description:   "Bytes should decode to 72",
-		//},
 		{
 			name:          "zero",
 			data:          []byte{0x00},
@@ -41,6 +74,15 @@ func Test_ReadVarIntSignedTwo(t *testing.T) {
 			expectedValue: 0,
 			expectedBytes: 1,
 			description:   "Zero should decode to 0",
+		},
+		// Test case for 0x90, 0x01 which should decode to 72 (signed)
+		{
+			name:          "positive 72 (two bytes)",
+			data:          []byte{0x90, 0x01},
+			offset:        0,
+			expectedValue: 72,
+			expectedBytes: 2,
+			description:   "0x90 0x01 should decode to 72 (144 zigzag-decoded: 144/2 = 72)",
 		},
 		// Positive numbers (even encoded values)
 		{
@@ -103,7 +145,7 @@ func Test_ReadVarIntSignedTwo(t *testing.T) {
 		},
 		{
 			name:          "positive 64 (two bytes)",
-			data:          []byte{0x81, 0x00}, // 2 * 64 = 128, varint: 0x81 0x00 (1 << 7 | 0 = 128)
+			data:          []byte{0x80, 0x01}, // 2 * 64 = 128, varint: 0x80 0x01 (0 | (1 << 7) = 128)
 			offset:        0,
 			expectedValue: 64,
 			expectedBytes: 2,
@@ -222,8 +264,9 @@ func Test_ReadVarIntSigned_ZigzagEncoding(t *testing.T) {
 		{-3, 5, nil},
 		{63, 126, nil},
 		{-63, 125, nil},
-		{64, 128, []byte{0x81, 0x00}}, // 128 = 1<<7 | 0, encoded as varint: 0x81 0x00
+		{64, 128, []byte{0x80, 0x01}}, // 128 = 0 | (1<<7), encoded as varint: 0x80 0x01
 		{-64, 127, nil},
+		{72, 144, []byte{0x90, 0x01}}, // 144 = 16 | (1<<7), encoded as varint: 0x90 0x01
 	}
 
 	for _, tc := range testCases {

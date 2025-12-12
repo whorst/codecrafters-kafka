@@ -1,7 +1,6 @@
 package kafka_describe_topic_service
 
 import (
-	"encoding/binary"
 	"fmt"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
@@ -39,21 +38,32 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 		return domain.Response{}, err
 	}
 
-	responseInfo := []parser.ResponseDataDescribeTopicInfo{}
+	topicResponseInfo := []parser.ResponseDataDescribeTopicInfo{}
 
-	s.cluster_metadata_parser.ParseClusterMetadataFileByTopicNames([]string{""})
+	_, clusterMetadata := s.cluster_metadata_parser.ParseClusterMetadataFileByTopicNames([]string{""})
+	fmt.Println(clusterMetadata)
 
-	for _, topicData := range parsedReq.Topics {
-		newInfo := parser.ResponseDataDescribeTopicInfo{
-			ErrorCode:                 []byte{0x00, 0x03},                                                                             // []byte //2 bytes
-			TopicNameInfo:             parser.TopicNameInfo{TopicName: topicData.TopicName, TopicNameBytes: topicData.TopicNameBytes}, // string // From the request?
-			TopicId:                   HardCodedTopicId,                                                                               // string // UUID
-			IsInternal:                []byte{0x00},                                                                                   // []byte // 1 byte, hard coded to 00
-			Partitions:                []byte{0x01},                                                                                   // []byte // 1 byte, hard coded to 01
-			TopicAuthorizedOperations: []byte{0x00, 0x00, 0x00, 0x00},                                                                 // []byte // 4 bytes, hard coded to 00
-			TagBuffer:                 []byte{0x00},                                                                                   // []byte // Hard Coded to 1 byte, 00
+	for topicUuid, partitionMetadata := range clusterMetadata.TopicUUIDPartitionMetadataMap {
+		if topicMetadata, exists := clusterMetadata.TopicUUIDTopicMetadataInfoMap[topicUuid]; !exists {
+			panic("Partition Metadata has invalid topic")
+		} else {
+			topicMetadata.PartitionsArray = partitionMetadata
 		}
-		responseInfo = append(responseInfo, newInfo)
+	}
+
+	//responseData := getOriginalResponse(parsedReq, topicResponseInfo)
+
+	for _, topicData := range clusterMetadata.TopicUUIDTopicMetadataInfoMap {
+		newInfo := parser.ResponseDataDescribeTopicInfo{
+			ErrorCode:                 []byte{0x00, 0x00},             // []byte //2 bytes
+			TopicNameInfo:             topicData.TopicNameInfo,        // string // From the request?
+			TopicId:                   topicData.TopicId,              // string // UUID
+			IsInternal:                []byte{0x00},                   // []byte // 1 byte, hard coded to 00
+			Partitions:                topicData.PartitionsArray,      // []byte // 1 byte, hard coded to 01
+			TopicAuthorizedOperations: []byte{0x00, 0x00, 0x00, 0x00}, // []byte // 4 bytes, hard coded to 00
+			TagBuffer:                 []byte{0x00},                   // []byte // Hard Coded to 1 byte, 00
+		}
+		topicResponseInfo = append(topicResponseInfo, newInfo)
 	}
 
 	responseData := &parser.ResponseDataDescribeTopic{
@@ -63,7 +73,7 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 		},
 		ResponseDataDescribeTopicBody: parser.ResponseDataDescribeTopicBody{
 			ThrottleTimeMs: []byte{0x00, 0x00, 0x00, 0x00},
-			Topics:         responseInfo,
+			Topics:         topicResponseInfo,
 			NextCursor:     []byte{0xff},
 			TagBufferBody:  []byte{0x00},
 		},
@@ -81,8 +91,31 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	}, nil
 }
 
-func int16ToBytes(i int16) []byte {
-	buf := make([]byte, 2)
-	binary.BigEndian.PutUint16(buf, uint16(i))
-	return buf
-}
+//func getOriginalResponse(parsedReq *parser.ParsedRequestDescribeTopic, topicResponseInfo []parser.ResponseDataDescribeTopicInfo) *parser.ResponseDataDescribeTopic {
+//	for _, topicData := range parsedReq.Topics {
+//		newInfo := parser.ResponseDataDescribeTopicInfo{
+//			ErrorCode:                 []byte{0x00, 0x03},                                                                             // []byte //2 bytes
+//			TopicNameInfo:             parser.TopicNameInfo{TopicName: topicData.TopicName, TopicNameBytes: topicData.TopicNameBytes}, // string // From the request?
+//			TopicId:                   HardCodedTopicId,                                                                               // string // UUID
+//			IsInternal:                []byte{0x00},                                                                                   // []byte // 1 byte, hard coded to 00
+//			Partitions:                []byte{0x01},                                                                                   // []byte // 1 byte, hard coded to 01
+//			TopicAuthorizedOperations: []byte{0x00, 0x00, 0x00, 0x00},                                                                 // []byte // 4 bytes, hard coded to 00
+//			TagBuffer:                 []byte{0x00},                                                                                   // []byte // Hard Coded to 1 byte, 00
+//		}
+//		topicResponseInfo = append(topicResponseInfo, newInfo)
+//	}
+//
+//	responseData := &parser.ResponseDataDescribeTopic{
+//		ResponseDataDescribeTopicHeader: parser.ResponseDataDescribeTopicHeader{
+//			CorrelationID:   parsedReq.CorrelationIdBytes,
+//			TagBufferHeader: []byte{0x00},
+//		},
+//		ResponseDataDescribeTopicBody: parser.ResponseDataDescribeTopicBody{
+//			ThrottleTimeMs: []byte{0x00, 0x00, 0x00, 0x00},
+//			Topics:         topicResponseInfo,
+//			NextCursor:     []byte{0xff},
+//			TagBufferBody:  []byte{0x00},
+//		},
+//	}
+//	return responseData
+//}

@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
+	"github.com/codecrafters-io/kafka-starter-go/core/ports/partition_metadata"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/common"
 )
 
@@ -96,4 +97,19 @@ func (p *KafkaProtocolParserDescribeTopic) EncodeResponse(response *parser.Respo
 	responseData = append(responseData, response.TagBufferBody...)
 
 	return responseData, nil
+}
+
+func (p *KafkaProtocolParserDescribeTopic) encodeAllPartitions(allPartitionMetadata []*partition_metadata.PartitionMetadata) []byte {
+	retVal := []byte{}
+
+	for _, pmd := range allPartitionMetadata {
+		retval := append(retVal, p.encodePartition(pmd)...)
+	}
+
+	return []byte{}
+}
+
+func (p *KafkaProtocolParserDescribeTopic) encodePartition(*partition_metadata.PartitionMetadata) []byte {
+
+	return []byte{}
 }

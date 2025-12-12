@@ -9,18 +9,20 @@ func ReadVarIntUnsigned(offset int, header []byte) (int, int) {
 	mostSignificantBit := 1
 	var total uint64 = 0
 	var numberOfBytesRead int = 0
+	var shift uint = 0
 
 	for mostSignificantBit >= 1 {
 		if offset >= len(header) {
 			return 0, 0
 		}
 		headerSize = header[offset]
-		// Most significant bit is a flag that checks if there's another byte to consume after this, 1 means yes and 0 means no
+		// Most significant bit is a flag that checks if there's another byte to consume after this
 		mostSignificantBit = int(headerSize & byte(0x80))
-		// These are the value bits that we add to total. We accomplish this by shifting left total and doing an or operations
-		// on the value bits
+		// Extract the 7 value bits
 		valueBits := uint64(headerSize & byte(0x7f))
-		total = total<<7 | valueBits
+		// Shift the value bits left by the appropriate amount and OR into total
+		total |= valueBits << shift
+		shift += 7
 		offset += 1
 		numberOfBytesRead += 1
 	}

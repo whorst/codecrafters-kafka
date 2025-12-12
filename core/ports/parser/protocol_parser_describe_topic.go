@@ -1,5 +1,9 @@
 package parser
 
+import (
+	"github.com/codecrafters-io/kafka-starter-go/core/ports/partition_metadata"
+)
+
 type ProtocolParserDescribeTopic interface {
 	// ParseRequest extracts structured data from raw binary request data
 	ParseRequest(data []byte) (*ParsedRequestDescribeTopic, error)
@@ -38,10 +42,10 @@ type ResponseDataDescribeTopicInfo struct {
 	TopicNameInfo             TopicNameInfo // From the request?
 	TopicId                   []byte        // UUID
 	IsInternal                []byte        // 1 byte, hard coded to 00
-	Partitions                []byte        // 1 byte, hard coded to 01
-	TopicAuthorizedOperations []byte        // 4 bytes, hard coded to 00
-	NextCursor                []byte        // 1 byte, hard coded to 0xff
-	TagBuffer                 []byte        // Hard Coded to 1 byte, 00
+	Partitions                []*partition_metadata.PartitionMetadata
+	TopicAuthorizedOperations []byte // 4 bytes, hard coded to 00
+	NextCursor                []byte // 1 byte, hard coded to 0xff
+	TagBuffer                 []byte // Hard Coded to 1 byte, 00
 }
 
 type TopicNameInfo struct {
