@@ -29,7 +29,7 @@ func (p *KafkaProtocolParserDescribeTopic) ParseRequest(data []byte) (*parser.Pa
 
 	arrayLengthOffset := 14 + clientIdLength + 1 //We add + 1 here to skip the tags bugger that comes after the clientId
 	topicArrayLength, totalBytesRead := common.ReadVarIntUnsigned(arrayLengthOffset, data)
-	topicArrayLength -= 1 // This always will always arrive with 1 added to it for some reason
+	//topicArrayLength -= 1 // This always will always arrive with 1 added to it for some reason
 
 	topicArrayOffset := arrayLengthOffset + totalBytesRead
 	parsedTopics := []parser.ParsedTopic{}
@@ -59,7 +59,7 @@ func (p *KafkaProtocolParserDescribeTopic) ParseRequest(data []byte) (*parser.Pa
 
 func (p *KafkaProtocolParserDescribeTopic) EncodeResponse(response *parser.ResponseDataDescribeTopic) ([]byte, error) {
 	responseData := []byte{}
-	
+
 	responseData = append(responseData, response.CorrelationID...)
 	responseData = append(responseData, response.ResponseDataDescribeTopicHeader.TagBufferHeader...)
 
