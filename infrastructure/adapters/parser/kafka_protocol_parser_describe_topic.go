@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/partition_metadata"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/common"
@@ -68,26 +66,25 @@ func (p *KafkaProtocolParserDescribeTopic) EncodeResponse(response *parser.Respo
 	responseData = append(responseData, response.ResponseDataDescribeTopicBody.ThrottleTimeMs...)
 
 	// Convert this to a varint
-	numberOfTopics := uint8(len(response.ResponseDataDescribeTopicBody.Topics) + 1) // The responseData number of topics should be able to be represented by one byte
-	fmt.Println(">>>>>>>>> ", numberOfTopics)
+	numberOfTopics := uint8(len(response.ResponseDataDescribeTopicBody.TopicsUnknown) + len(response.ResponseDataDescribeTopicBody.Topics) + 1) // The responseData number of topics should be able to be represented by one byte
 	numberOfTopicsVarInt := common.BytesToVarInt([]byte{numberOfTopics})
 	responseData = append(responseData, numberOfTopicsVarInt...)
 
-	//for _, unknown := range response.TopicsUnknown {
-	//	responseData = append(responseData, unknown.ErrorCode...)
-	//
-	//	// Convert this to a varint
-	//	topicNameBytes := []byte{byte(uint8(len(unknown.TopicNameInfo.TopicNameBytes) + 1))}
-	//	topicNameLengthVarInt := common.BytesToVarInt(topicNameBytes)
-	//
-	//	responseData = append(responseData, topicNameLengthVarInt...)
-	//	responseData = append(responseData, unknown.TopicNameInfo.TopicNameBytes...)
-	//	responseData = append(responseData, unknown.TopicId...)
-	//	responseData = append(responseData, unknown.IsInternal...)
-	//	responseData = append(responseData, p.encodeAllPartitions(unknown.Partitions)...)
-	//	responseData = append(responseData, unknown.TopicAuthorizedOperations...)
-	//	responseData = append(responseData, unknown.TagBuffer...)
-	//}
+	for _, unknown := range response.TopicsUnknown {
+		responseData = append(responseData, unknown.ErrorCode...)
+
+		// Convert this to a varint
+		topicNameBytes := []byte{byte(uint8(len(unknown.TopicNameInfo.TopicNameBytes) + 1))}
+		topicNameLengthVarInt := common.BytesToVarInt(topicNameBytes)
+
+		responseData = append(responseData, topicNameLengthVarInt...)
+		responseData = append(responseData, unknown.TopicNameInfo.TopicNameBytes...)
+		responseData = append(responseData, unknown.TopicId...)
+		responseData = append(responseData, unknown.IsInternal...)
+		responseData = append(responseData, p.encodeAllPartitions(unknown.Partitions)...)
+		responseData = append(responseData, unknown.TopicAuthorizedOperations...)
+		responseData = append(responseData, unknown.TagBuffer...)
+	}
 
 	for _, topic := range response.Topics {
 		responseData = append(responseData, topic.ErrorCode...)
