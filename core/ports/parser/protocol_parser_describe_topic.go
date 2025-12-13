@@ -32,6 +32,7 @@ type ResponseDataDescribeTopicHeader struct {
 
 type ResponseDataDescribeTopicBody struct {
 	ThrottleTimeMs []byte // Hard Coded 4 Bytes, use 0
+	TopicsUnknown  []ResponseDataDescribeTopicInfo
 	Topics         []ResponseDataDescribeTopicInfo
 	NextCursor     []byte // Nullable 1 byte, use -1 for null
 	TagBufferBody  []byte // Hard Coded 1 Byte
@@ -68,6 +69,17 @@ func (r ResponseDataDescribeTopic) GetMessageSize() int {
 	numberOfTopics := uint8(len(r.ResponseDataDescribeTopicBody.Topics)) // The total number of topics should be able to be represented by one byte
 	_ = numberOfTopics
 	total += 1
+
+	for _, topicUnknown := range r.TopicsUnknown {
+		total += len(topicUnknown.ErrorCode)
+		total += 1 // How many bytes is the int length of the topic name?
+		total += len(topicUnknown.TopicNameInfo.TopicNameBytes)
+		total += len(topicUnknown.TopicId)
+		total += len(topicUnknown.IsInternal) //represent topic.isInternal
+		total += len(topicUnknown.Partitions)
+		total += len(topicUnknown.TopicAuthorizedOperations)
+		total += len(topicUnknown.TagBuffer)
+	}
 
 	for _, topic := range r.Topics {
 		total += len(topic.ErrorCode)
