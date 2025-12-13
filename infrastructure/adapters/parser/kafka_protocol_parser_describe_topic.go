@@ -121,7 +121,7 @@ func (p *KafkaProtocolParserDescribeTopic) encodePartition(pm *partition_metadat
 	result = append(result, pm.EligibleLeaderReplicasArrayLength...)
 	result = append(result, pm.LastKnownElrArrayLength...)
 	result = append(result, pm.OfflineReplicasArrayLength...)
-	result = append(result, pm.TagBuffer...)
-	fmt.Printf(">>>>>>>>>>>>>> pm.TagBuffer: %+v \n", pm.TagBuffer)
+	//result = append(result, pm.TagBuffer...)
+	//fmt.Printf(">>>>>>>>>>>>>> pm.TagBuffer: %+v \n", pm.TagBuffer)
 	return result
 }
