@@ -48,42 +48,57 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	topicResponseInfo := []parser.ResponseDataDescribeTopicInfo{}
 	topicsUnknown := []parser.ResponseDataDescribeTopicInfo{}
 
-	_, clusterMetadata := s.cluster_metadata_parser.ParseClusterMetadataFileByTopicNames([]string{""})
+	_, clusterMetadata := s.cluster_metadata_parser.ParseClusterMetadataFileByTopicNames()
 	fmt.Printf("TopicUUIDTopicMetadataInfoMap: %+v\n", clusterMetadata.TopicUUIDTopicMetadataInfoMap)
 	fmt.Printf("TopicUUIDPartitionMetadataMap: %+v\n", clusterMetadata.TopicUUIDPartitionMetadataMap)
 	fmt.Printf("TopicNameTopicUuidMap: %+v\n", clusterMetadata.TopicNameTopicUuidMap)
 
-	for topicUuid, partitionMetadata := range clusterMetadata.TopicUUIDPartitionMetadataMap {
-		if topicMetadata, exists := clusterMetadata.TopicUUIDTopicMetadataInfoMap[topicUuid]; !exists {
-			panic("Partition Metadata has invalid topic")
-		} else {
-			topicMetadata.PartitionsArray = partitionMetadata
-		}
-	}
+	s.GetPartitionMetadataForTopic(clusterMetadata)
 
 	//responseData := getOriginalResponse(parsedReq, topicResponseInfo)
 
 	fmt.Printf("Topics to find: %+v \n", topicsToFind)
 
-	for topicName, topicToFind := range topicsToFind {
-		if _, exists := clusterMetadata.TopicNameTopicUuidMap[topicName]; !exists {
+	topicsUnknown = s.GetTopicsNotFoundFromRequestData(topicsToFind, clusterMetadata, topicsUnknown)
+	topicResponseInfo = s.GetTopicsFromRequestData(clusterMetadata, topicsToFind, topicResponseInfo)
+	responseData := s.GetResponseDataDescribeTopic(parsedReqs, topicsUnknown, topicResponseInfo)
 
-			fmt.Printf("Could Not find Topic: %+v \n", topicName)
-			nonExistingInfo := parser.ResponseDataDescribeTopicInfo{
-				ErrorCode:                 []byte{0x00, 0x03},                        // []byte //2 bytes
-				TopicNameInfo:             topicToFind,                               // string // From the request?
-				TopicId:                   HardCodedTopicId,                          // string // UUID
-				IsInternal:                []byte{0x00},                              // []byte // 1 byte, hard coded to 00
-				Partitions:                []*partition_metadata.PartitionMetadata{}, // []byte // 1 byte, hard coded to 01
-				TopicAuthorizedOperations: []byte{0x00, 0x00, 0x00, 0x00},            // []byte // 4 bytes, hard coded to 00
-				TagBuffer:                 []byte{0x00},                              // []byte // Hard Coded to 1 byte, 00
-			}
-			topicsUnknown = append(topicsUnknown, nonExistingInfo)
-		} else {
-			continue
-		}
+	// Encode the response using the protocol parser (infrastructure concern)
+	encodedResponse, err := s.parser.EncodeResponse(responseData)
+	messageSizeBuffer := make([]byte, 4)
+	//
+	binary.BigEndian.PutUint32(messageSizeBuffer, uint32(len(encodedResponse)))
+	//
+	encodedResponse = append(messageSizeBuffer, encodedResponse...)
+
+	if err != nil {
+		return domain.Response{}, err
 	}
+	fmt.Printf("This is the response %+v \n", encodedResponse)
 
+	return domain.Response{
+		Data: encodedResponse,
+	}, nil
+}
+
+func (s *KafkaDescribeService) GetResponseDataDescribeTopic(parsedReqs *parser.ParsedRequestDescribeTopic, topicsUnknown []parser.ResponseDataDescribeTopicInfo, topicResponseInfo []parser.ResponseDataDescribeTopicInfo) *parser.ResponseDataDescribeTopic {
+	responseData := &parser.ResponseDataDescribeTopic{
+		ResponseDataDescribeTopicHeader: parser.ResponseDataDescribeTopicHeader{
+			CorrelationID:   parsedReqs.CorrelationIdBytes,
+			TagBufferHeader: []byte{0x00},
+		},
+		ResponseDataDescribeTopicBody: parser.ResponseDataDescribeTopicBody{
+			ThrottleTimeMs: []byte{0x00, 0x00, 0x00, 0x00},
+			TopicsUnknown:  topicsUnknown,
+			Topics:         topicResponseInfo,
+			NextCursor:     []byte{0xff},
+			TagBufferBody:  []byte{0x00},
+		},
+	}
+	return responseData
+}
+
+func (s *KafkaDescribeService) GetTopicsFromRequestData(clusterMetadata cluster_metadata_port.ClusterMetadataLogResponse, topicsToFind map[string]parser.TopicNameInfo, topicResponseInfo []parser.ResponseDataDescribeTopicInfo) []parser.ResponseDataDescribeTopicInfo {
 	for _, topicData := range clusterMetadata.TopicUUIDTopicMetadataInfoMap {
 		fmt.Printf("Adding topic data to response for topic name: %+v\n", topicData.TopicNameInfo.TopicName)
 
@@ -102,37 +117,39 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 		}
 		topicResponseInfo = append(topicResponseInfo, topicInfo)
 	}
+	return topicResponseInfo
+}
 
-	responseData := &parser.ResponseDataDescribeTopic{
-		ResponseDataDescribeTopicHeader: parser.ResponseDataDescribeTopicHeader{
-			CorrelationID:   parsedReqs.CorrelationIdBytes,
-			TagBufferHeader: []byte{0x00},
-		},
-		ResponseDataDescribeTopicBody: parser.ResponseDataDescribeTopicBody{
-			ThrottleTimeMs: []byte{0x00, 0x00, 0x00, 0x00},
-			TopicsUnknown:  topicsUnknown,
-			Topics:         topicResponseInfo,
-			NextCursor:     []byte{0xff},
-			TagBufferBody:  []byte{0x00},
-		},
+func (s *KafkaDescribeService) GetTopicsNotFoundFromRequestData(topicsToFind map[string]parser.TopicNameInfo, clusterMetadata cluster_metadata_port.ClusterMetadataLogResponse, topicsUnknown []parser.ResponseDataDescribeTopicInfo) []parser.ResponseDataDescribeTopicInfo {
+	for topicName, topicToFind := range topicsToFind {
+		if _, exists := clusterMetadata.TopicNameTopicUuidMap[topicName]; !exists {
+
+			fmt.Printf("Could Not find Topic: %+v \n", topicName)
+			nonExistingInfo := parser.ResponseDataDescribeTopicInfo{
+				ErrorCode:                 []byte{0x00, 0x03},                        // []byte //2 bytes
+				TopicNameInfo:             topicToFind,                               // string // From the request?
+				TopicId:                   HardCodedTopicId,                          // string // UUID
+				IsInternal:                []byte{0x00},                              // []byte // 1 byte, hard coded to 00
+				Partitions:                []*partition_metadata.PartitionMetadata{}, // []byte // 1 byte, hard coded to 01
+				TopicAuthorizedOperations: []byte{0x00, 0x00, 0x00, 0x00},            // []byte // 4 bytes, hard coded to 00
+				TagBuffer:                 []byte{0x00},                              // []byte // Hard Coded to 1 byte, 00
+			}
+			topicsUnknown = append(topicsUnknown, nonExistingInfo)
+		} else {
+			continue
+		}
 	}
+	return topicsUnknown
+}
 
-	// Encode the response using the protocol parser (infrastructure concern)
-	encodedResponse, err := s.parser.EncodeResponse(responseData)
-	messageSizeBuffer := make([]byte, 4)
-	//
-	binary.BigEndian.PutUint32(messageSizeBuffer, uint32(len(encodedResponse)))
-	//
-	encodedResponse = append(messageSizeBuffer, encodedResponse...)
-
-	if err != nil {
-		return domain.Response{}, err
+func (s *KafkaDescribeService) GetPartitionMetadataForTopic(clusterMetadata cluster_metadata_port.ClusterMetadataLogResponse) {
+	for topicUuid, partitionMetadata := range clusterMetadata.TopicUUIDPartitionMetadataMap {
+		if topicMetadata, exists := clusterMetadata.TopicUUIDTopicMetadataInfoMap[topicUuid]; !exists {
+			panic("Partition Metadata has invalid topic")
+		} else {
+			topicMetadata.PartitionsArray = partitionMetadata
+		}
 	}
-	fmt.Printf("This is the response %+v \n", encodedResponse)
-
-	return domain.Response{
-		Data: encodedResponse,
-	}, nil
 }
 
 //func getOriginalResponse(parsedReq *parser.ParsedRequestDescribeTopic, topicResponseInfo []parser.ResponseDataDescribeTopicInfo) *parser.ResponseDataDescribeTopic {

@@ -19,7 +19,7 @@ func NewClusterMetadataParser() *ClusterMetadata {
 	return &ClusterMetadata{}
 }
 
-func (c *ClusterMetadata) ParseClusterMetadataFileByTopicNames(topicNames []string) (error, clutser_metadata_port.ClusterMetadataLogResponse) {
+func (c *ClusterMetadata) ParseClusterMetadataFileByTopicNames() (error, clutser_metadata_port.ClusterMetadataLogResponse) {
 
 	c.ClusterMetadataLogResponse = &clutser_metadata_port.ClusterMetadataLogResponse{}
 	c.ClusterMetadataLogResponse.TopicUUIDTopicMetadataInfoMap = make(map[string]*clutser_metadata_port.TopicMetadataInfo)

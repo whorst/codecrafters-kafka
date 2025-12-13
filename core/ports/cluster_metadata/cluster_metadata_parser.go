@@ -6,7 +6,7 @@ import (
 )
 
 type ClusterMetadataParser interface {
-	ParseClusterMetadataFileByTopicNames(topicNames []string) (error, ClusterMetadataLogResponse)
+	ParseClusterMetadataFileByTopicNames() (error, ClusterMetadataLogResponse)
 }
 
 type ClusterMetadataLogResponse struct {
