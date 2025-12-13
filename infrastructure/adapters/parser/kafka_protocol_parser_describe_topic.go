@@ -70,21 +70,21 @@ func (p *KafkaProtocolParserDescribeTopic) EncodeResponse(response *parser.Respo
 	numberOfTopicsVarInt := common.BytesToVarInt([]byte{numberOfTopics})
 	responseData = append(responseData, numberOfTopicsVarInt...)
 
-	for _, unknown := range response.TopicsUnknown {
-		responseData = append(responseData, unknown.ErrorCode...)
-
-		// Convert this to a varint
-		topicNameBytes := []byte{byte(uint8(len(unknown.TopicNameInfo.TopicNameBytes) + 1))}
-		topicNameLengthVarInt := common.BytesToVarInt(topicNameBytes)
-
-		responseData = append(responseData, topicNameLengthVarInt...)
-		responseData = append(responseData, unknown.TopicNameInfo.TopicNameBytes...)
-		responseData = append(responseData, unknown.TopicId...)
-		responseData = append(responseData, unknown.IsInternal...)
-		responseData = append(responseData, p.encodeAllPartitions(unknown.Partitions)...)
-		responseData = append(responseData, unknown.TopicAuthorizedOperations...)
-		responseData = append(responseData, unknown.TagBuffer...)
-	}
+	//for _, unknown := range response.TopicsUnknown {
+	//	responseData = append(responseData, unknown.ErrorCode...)
+	//
+	//	// Convert this to a varint
+	//	topicNameBytes := []byte{byte(uint8(len(unknown.TopicNameInfo.TopicNameBytes) + 1))}
+	//	topicNameLengthVarInt := common.BytesToVarInt(topicNameBytes)
+	//
+	//	responseData = append(responseData, topicNameLengthVarInt...)
+	//	responseData = append(responseData, unknown.TopicNameInfo.TopicNameBytes...)
+	//	responseData = append(responseData, unknown.TopicId...)
+	//	responseData = append(responseData, unknown.IsInternal...)
+	//	responseData = append(responseData, p.encodeAllPartitions(unknown.Partitions)...)
+	//	responseData = append(responseData, unknown.TopicAuthorizedOperations...)
+	//	responseData = append(responseData, unknown.TagBuffer...)
+	//}
 
 	for _, topic := range response.Topics {
 		responseData = append(responseData, topic.ErrorCode...)

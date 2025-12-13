@@ -70,16 +70,16 @@ func (r ResponseDataDescribeTopic) GetMessageSize() int {
 	_ = numberOfTopics
 	total += 1
 
-	for _, topicUnknown := range r.TopicsUnknown {
-		total += len(topicUnknown.ErrorCode)
-		total += 1 // How many bytes is the int length of the topic name?
-		total += len(topicUnknown.TopicNameInfo.TopicNameBytes)
-		total += len(topicUnknown.TopicId)
-		total += len(topicUnknown.IsInternal) //represent topic.isInternal
-		total += len(topicUnknown.Partitions)
-		total += len(topicUnknown.TopicAuthorizedOperations)
-		total += len(topicUnknown.TagBuffer)
-	}
+	//for _, topicUnknown := range r.TopicsUnknown {
+	//	total += len(topicUnknown.ErrorCode)
+	//	total += 1 // How many bytes is the int length of the topic name?
+	//	total += len(topicUnknown.TopicNameInfo.TopicNameBytes)
+	//	total += len(topicUnknown.TopicId)
+	//	total += len(topicUnknown.IsInternal) //represent topic.isInternal
+	//	total += len(topicUnknown.Partitions)
+	//	total += len(topicUnknown.TopicAuthorizedOperations)
+	//	total += len(topicUnknown.TagBuffer)
+	//}
 
 	for _, topic := range r.Topics {
 		total += len(topic.ErrorCode)
