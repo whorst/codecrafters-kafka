@@ -83,7 +83,6 @@ func (p *KafkaProtocolParserDescribeTopic) EncodeResponse(response *parser.Respo
 		responseData = append(responseData, topic.IsInternal...)
 		responseData = append(responseData, p.encodeAllPartitions(topic.Partitions)...)
 		responseData = append(responseData, topic.TopicAuthorizedOperations...)
-		//fmt.Printf(">>>>>>>>>>>>>> topic.TagBuffer %+v", topic.TagBuffer)
 		responseData = append(responseData, topic.TagBuffer...)
 	}
 	responseData = append(responseData, response.NextCursor...)

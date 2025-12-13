@@ -46,7 +46,9 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	topicResponseInfo := []parser.ResponseDataDescribeTopicInfo{}
 
 	_, clusterMetadata := s.cluster_metadata_parser.ParseClusterMetadataFileByTopicNames([]string{""})
-	fmt.Println(clusterMetadata)
+	fmt.Printf("TopicUUIDTopicMetadataInfoMap: %+v\n", clusterMetadata.TopicUUIDTopicMetadataInfoMap)
+	fmt.Printf("TopicUUIDPartitionMetadataMap: %+v\n", clusterMetadata.TopicUUIDPartitionMetadataMap)
+	fmt.Printf("TopicNameTopicUuidMap: %+v\n", clusterMetadata.TopicNameTopicUuidMap)
 
 	for topicUuid, partitionMetadata := range clusterMetadata.TopicUUIDPartitionMetadataMap {
 		if topicMetadata, exists := clusterMetadata.TopicUUIDTopicMetadataInfoMap[topicUuid]; !exists {
@@ -57,6 +59,8 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	}
 
 	//responseData := getOriginalResponse(parsedReq, topicResponseInfo)
+
+	fmt.Printf("Topics to find: %+v \n", topicsToFind)
 
 	for _, topicData := range clusterMetadata.TopicUUIDTopicMetadataInfoMap {
 		if _, exists := topicsToFind[topicData.TopicNameInfo.TopicName]; !exists {
