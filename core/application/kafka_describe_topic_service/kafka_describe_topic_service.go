@@ -45,7 +45,7 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	}
 
 	topicResponseInfo := []parser.ResponseDataDescribeTopicInfo{}
-	topicsUnkown := []parser.ResponseDataDescribeTopicInfo{}
+	topicsUnknown := []parser.ResponseDataDescribeTopicInfo{}
 
 	_, clusterMetadata := s.cluster_metadata_parser.ParseClusterMetadataFileByTopicNames([]string{""})
 	fmt.Printf("TopicUUIDTopicMetadataInfoMap: %+v\n", clusterMetadata.TopicUUIDTopicMetadataInfoMap)
@@ -77,7 +77,7 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 				TopicAuthorizedOperations: []byte{0x00, 0x00, 0x00, 0x00},            // []byte // 4 bytes, hard coded to 00
 				TagBuffer:                 []byte{0x00},                              // []byte // Hard Coded to 1 byte, 00
 			}
-			topicResponseInfo = append(topicResponseInfo, nonExistingInfo)
+			topicsUnknown = append(topicsUnknown, nonExistingInfo)
 		} else {
 			continue
 		}
@@ -94,7 +94,7 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 			TopicAuthorizedOperations: []byte{0x00, 0x00, 0x00, 0x00}, // []byte // 4 bytes, hard coded to 00
 			TagBuffer:                 []byte{0x00},                   // []byte // Hard Coded to 1 byte, 00
 		}
-		topicsUnkown = append(topicsUnkown, unknownInfo)
+		topicResponseInfo = append(topicResponseInfo, unknownInfo)
 	}
 
 	responseData := &parser.ResponseDataDescribeTopic{
@@ -104,7 +104,7 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 		},
 		ResponseDataDescribeTopicBody: parser.ResponseDataDescribeTopicBody{
 			ThrottleTimeMs: []byte{0x00, 0x00, 0x00, 0x00},
-			TopicsUnknown:  topicsUnkown,
+			TopicsUnknown:  topicsUnknown,
 			Topics:         topicResponseInfo,
 			NextCursor:     []byte{0xff},
 			TagBufferBody:  []byte{0x00},
