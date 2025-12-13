@@ -85,7 +85,7 @@ func (p *KafkaProtocolParserDescribeTopic) EncodeResponse(response *parser.Respo
 		responseData = append(responseData, topic.IsInternal...)
 		responseData = append(responseData, p.encodeAllPartitions(topic.Partitions)...)
 		responseData = append(responseData, topic.TopicAuthorizedOperations...)
-		fmt.Printf(">>>>>>>>>>>>>> topic.TagBuffer %+v", topic.TagBuffer)
+		//fmt.Printf(">>>>>>>>>>>>>> topic.TagBuffer %+v", topic.TagBuffer)
 		responseData = append(responseData, topic.TagBuffer...)
 	}
 	responseData = append(responseData, response.NextCursor...)
@@ -109,6 +109,8 @@ func (p *KafkaProtocolParserDescribeTopic) encodeAllPartitions(allPartitionMetad
 
 func (p *KafkaProtocolParserDescribeTopic) encodePartition(pm *partition_metadata.PartitionMetadata) []byte {
 	result := []byte{}
+	fmt.Printf(">>>>>>>>>>>>>> pm.ErrorCode: %+v \n", pm.ErrorCode)
+
 	result = append(result, pm.ErrorCode...)
 	result = append(result, pm.PartitionIndex...)
 	result = append(result, pm.LeaderId...)
@@ -121,7 +123,7 @@ func (p *KafkaProtocolParserDescribeTopic) encodePartition(pm *partition_metadat
 	result = append(result, pm.EligibleLeaderReplicasArrayLength...)
 	result = append(result, pm.LastKnownElrArrayLength...)
 	result = append(result, pm.OfflineReplicasArrayLength...)
-	//result = append(result, pm.TagBuffer...)
-	//fmt.Printf(">>>>>>>>>>>>>> pm.TagBuffer: %+v \n", pm.TagBuffer)
+	result = append(result, pm.TagBuffer...)
+	fmt.Printf(">>>>>>>>>>>>>> pm.TagBuffer: %+v \n", pm.TagBuffer)
 	return result
 }
