@@ -8,6 +8,7 @@ import (
 	cluster_metadata_port "github.com/codecrafters-io/kafka-starter-go/core/ports/cluster_metadata"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/driving"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
+	"github.com/codecrafters-io/kafka-starter-go/core/ports/partition_metadata"
 )
 
 // KafkaService implements the driving port (KafkaHandler interface).
@@ -38,9 +39,9 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	if err != nil {
 		return domain.Response{}, err
 	}
-	topicsToFind := map[string]string{}
+	topicsToFind := map[string]parser.TopicNameInfo{}
 	for _, parsedRequest := range parsedReqs.Topics {
-		topicsToFind[parsedRequest.TopicName] = parsedRequest.TopicName
+		topicsToFind[parsedRequest.TopicName] = parser.TopicNameInfo{TopicNameBytes: parsedRequest.TopicNameBytes, TopicName: parsedRequest.TopicName}
 	}
 
 	topicResponseInfo := []parser.ResponseDataDescribeTopicInfo{}
@@ -61,6 +62,23 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	//responseData := getOriginalResponse(parsedReq, topicResponseInfo)
 
 	fmt.Printf("Topics to find: %+v \n", topicsToFind)
+
+	for topicName, topicToFind := range topicsToFind {
+		if _, exists := clusterMetadata.TopicNameTopicUuidMap[topicName]; !exists {
+			nonExistingInfo := parser.ResponseDataDescribeTopicInfo{
+				ErrorCode:                 []byte{0x00, 0x00},                        // []byte //2 bytes
+				TopicNameInfo:             topicToFind,                               // string // From the request?
+				TopicId:                   HardCodedTopicId,                          // string // UUID
+				IsInternal:                []byte{0x00},                              // []byte // 1 byte, hard coded to 00
+				Partitions:                []*partition_metadata.PartitionMetadata{}, // []byte // 1 byte, hard coded to 01
+				TopicAuthorizedOperations: []byte{0x00, 0x00, 0x00, 0x00},            // []byte // 4 bytes, hard coded to 00
+				TagBuffer:                 []byte{0x00},                              // []byte // Hard Coded to 1 byte, 00
+			}
+			topicResponseInfo = append(topicResponseInfo, nonExistingInfo)
+		} else {
+			continue
+		}
+	}
 
 	for _, topicData := range clusterMetadata.TopicUUIDTopicMetadataInfoMap {
 		//if _, exists := topicsToFind[topicData.TopicNameInfo.TopicName]; !exists {

@@ -93,6 +93,9 @@ func (p *KafkaProtocolParserDescribeTopic) EncodeResponse(response *parser.Respo
 
 func (p *KafkaProtocolParserDescribeTopic) encodeAllPartitions(allPartitionMetadata []*partition_metadata.PartitionMetadata) []byte {
 	retVal := []byte{}
+	if len(allPartitionMetadata) == 0 {
+		return []byte{0x01}
+	}
 
 	retVal = append(retVal, common.IntToVarInt(len(allPartitionMetadata)+1)...)
 
