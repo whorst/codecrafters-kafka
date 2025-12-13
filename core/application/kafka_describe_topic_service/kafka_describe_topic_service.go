@@ -86,7 +86,12 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 
 	for _, topicData := range clusterMetadata.TopicUUIDTopicMetadataInfoMap {
 		fmt.Printf("Adding topic data to response for topic name: %+v\n", topicData.TopicNameInfo.TopicName)
-		unknownInfo := parser.ResponseDataDescribeTopicInfo{
+
+		if _, exists := topicsToFind[topicData.TopicNameInfo.TopicName]; !exists {
+			continue
+		}
+
+		topicInfo := parser.ResponseDataDescribeTopicInfo{
 			ErrorCode:                 []byte{0x00, 0x00},             // []byte //2 bytes
 			TopicNameInfo:             topicData.TopicNameInfo,        // string // From the request?
 			TopicId:                   topicData.TopicId,              // string // UUID
@@ -95,7 +100,7 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 			TopicAuthorizedOperations: []byte{0x00, 0x00, 0x00, 0x00}, // []byte // 4 bytes, hard coded to 00
 			TagBuffer:                 []byte{0x00},                   // []byte // Hard Coded to 1 byte, 00
 		}
-		topicResponseInfo = append(topicResponseInfo, unknownInfo)
+		topicResponseInfo = append(topicResponseInfo, topicInfo)
 	}
 
 	responseData := &parser.ResponseDataDescribeTopic{
