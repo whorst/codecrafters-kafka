@@ -42,6 +42,7 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	topicsToFind := map[string]parser.TopicNameInfo{}
 	for _, parsedRequest := range parsedReqs.Topics {
 		topicsToFind[parsedRequest.TopicName] = parser.TopicNameInfo{TopicNameBytes: parsedRequest.TopicNameBytes, TopicName: parsedRequest.TopicName}
+		fmt.Printf("These are the topics to find: %+v\n", parsedRequest.TopicName)
 	}
 
 	topicResponseInfo := []parser.ResponseDataDescribeTopicInfo{}
