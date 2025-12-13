@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/partition_metadata"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/common"
@@ -67,6 +69,7 @@ func (p *KafkaProtocolParserDescribeTopic) EncodeResponse(response *parser.Respo
 
 	// Convert this to a varint
 	numberOfTopics := byte(uint8(len(response.ResponseDataDescribeTopicBody.Topics) + 1)) // The responseData number of topics should be able to be represented by one byte
+	fmt.Println(">>>>>>>>> ", numberOfTopics)
 	numberOfTopicsVarInt := common.BytesToVarInt([]byte{numberOfTopics})
 	responseData = append(responseData, numberOfTopicsVarInt...)
 
