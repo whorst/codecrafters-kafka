@@ -63,9 +63,9 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	fmt.Printf("Topics to find: %+v \n", topicsToFind)
 
 	for _, topicData := range clusterMetadata.TopicUUIDTopicMetadataInfoMap {
-		if _, exists := topicsToFind[topicData.TopicNameInfo.TopicName]; !exists {
-			continue
-		}
+		//if _, exists := topicsToFind[topicData.TopicNameInfo.TopicName]; !exists {
+		//	continue
+		//}
 		newInfo := parser.ResponseDataDescribeTopicInfo{
 			ErrorCode:                 []byte{0x00, 0x00},             // []byte //2 bytes
 			TopicNameInfo:             topicData.TopicNameInfo,        // string // From the request?
