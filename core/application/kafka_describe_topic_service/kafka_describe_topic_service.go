@@ -70,7 +70,7 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 
 			fmt.Printf("Could Not find Topic: %+v \n", topicName)
 			nonExistingInfo := parser.ResponseDataDescribeTopicInfo{
-				ErrorCode:                 []byte{0x00, 0x00},                        // []byte //2 bytes
+				ErrorCode:                 []byte{0x00, 0x03},                        // []byte //2 bytes
 				TopicNameInfo:             topicToFind,                               // string // From the request?
 				TopicId:                   HardCodedTopicId,                          // string // UUID
 				IsInternal:                []byte{0x00},                              // []byte // 1 byte, hard coded to 00
