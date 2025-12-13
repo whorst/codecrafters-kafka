@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/partition_metadata"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/common"
@@ -100,8 +98,7 @@ func (p *KafkaProtocolParserDescribeTopic) encodeAllPartitions(allPartitionMetad
 	retVal = append(retVal, common.IntToVarInt(len(allPartitionMetadata)+1)...)
 
 	for _, pmd := range allPartitionMetadata {
-		partitionBytes := append(retVal, p.encodePartition(pmd)...)
-		retVal = append(retVal, partitionBytes...)
+		retVal = append(retVal, p.encodePartition(pmd)...)
 	}
 
 	return retVal
@@ -109,21 +106,45 @@ func (p *KafkaProtocolParserDescribeTopic) encodeAllPartitions(allPartitionMetad
 
 func (p *KafkaProtocolParserDescribeTopic) encodePartition(pm *partition_metadata.PartitionMetadata) []byte {
 	result := []byte{}
-	fmt.Printf(">>>>>>>>>>>>>> pm.ErrorCode: %+v \n", pm.ErrorCode)
 
+	// Error Code (2 bytes)
 	result = append(result, pm.ErrorCode...)
+
+	// Partition Index (4 bytes - INT32)
 	result = append(result, pm.PartitionIndex...)
+
+	// Leader ID (4 bytes - INT32)
 	result = append(result, pm.LeaderId...)
+
+	// Leader Epoch (4 bytes - INT32)
 	result = append(result, pm.LeaderEpoch...)
+
+	// Replica Nodes
+	// Array Length (varint) - stored as bytes, use directly
 	result = append(result, pm.ReplicaNodes.ArrayLength...)
 	// Replica Node array (each node is 4 bytes)
 	result = append(result, pm.ReplicaNodes.ReplicaNodesArray...)
+
+	// ISR Nodes
+	// Array Length (varint) - stored as bytes, use directly
 	result = append(result, pm.IsrNodes.ArrayLength...)
+	// ISR Node array (each node is 4 bytes)
 	result = append(result, pm.IsrNodes.IsrNodeArray...)
+
+	// Eligible Leader Replicas
+	// Array Length (varint) - stored as bytes, use directly
 	result = append(result, pm.EligibleLeaderReplicasArrayLength...)
+
+	// Last Known ELR
+	// Array Length (varint) - stored as bytes, use directly
 	result = append(result, pm.LastKnownElrArrayLength...)
+
+	// Offline Replicas
+	// Array Length (varint) - stored as bytes, use directly
 	result = append(result, pm.OfflineReplicasArrayLength...)
+
+	// Tag Buffer (1 byte)
 	result = append(result, pm.TagBuffer...)
-	fmt.Printf(">>>>>>>>>>>>>> pm.TagBuffer: %+v \n", pm.TagBuffer)
+
 	return result
 }
