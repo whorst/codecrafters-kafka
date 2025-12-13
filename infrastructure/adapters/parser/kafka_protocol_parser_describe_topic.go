@@ -68,7 +68,7 @@ func (p *KafkaProtocolParserDescribeTopic) EncodeResponse(response *parser.Respo
 	responseData = append(responseData, response.ResponseDataDescribeTopicBody.ThrottleTimeMs...)
 
 	// Convert this to a varint
-	numberOfTopics := byte(uint8(len(response.ResponseDataDescribeTopicBody.Topics) + 1)) // The responseData number of topics should be able to be represented by one byte
+	numberOfTopics := uint8(len(response.ResponseDataDescribeTopicBody.Topics)) // The responseData number of topics should be able to be represented by one byte
 	fmt.Println(">>>>>>>>> ", numberOfTopics)
 	numberOfTopicsVarInt := common.BytesToVarInt([]byte{numberOfTopics})
 	responseData = append(responseData, numberOfTopicsVarInt...)
