@@ -22,7 +22,7 @@ func main() {
 
 	protocolParserDescribeTopic := parser.NewKafkaProtocolParserDescribeTopic()
 	clusterMetadataParser := cluster_metadata_adapter.NewClusterMetadataParser()
-	kafkaServiceDescribeTopic := kafka_describe_topic_service.NewKafkaDescribeTopicService(protocolParserDescribeTopic, &clusterMetadataParser)
+	kafkaServiceDescribeTopic := kafka_describe_topic_service.NewKafkaDescribeTopicService(protocolParserDescribeTopic, clusterMetadataParser)
 
 	// Create unified router that routes based on API key
 	router := kafka_router.NewKafkaRouter(kafkaService, kafkaServiceDescribeTopic)
