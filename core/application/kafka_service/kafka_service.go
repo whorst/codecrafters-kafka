@@ -40,7 +40,6 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 		ErrorCode:          errorCode,
 		ApiKeysArrayLength: []byte{0x03},
 		ApiKeys: []parser.ApiKey{
-			getDescribeTopicPartitionsApiKey(),
 			getFetchApiKey(),
 			{
 				ApiKey:         []byte{0x00, 0x12},
@@ -48,6 +47,7 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 				MaxVersion:     []byte{0x00, 0x04},
 				TagBufferChild: []byte{0x00},
 			},
+			//getDescribeTopicPartitionsApiKey(),
 		},
 		ThrottleTimeMs:  []byte{0x00, 0x00, 0x00, 0x00},
 		TagBufferParent: []byte{0x00},
