@@ -2,6 +2,7 @@ package kafka_router
 
 import (
 	"encoding/binary"
+	"fmt"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/driving"
@@ -42,6 +43,9 @@ func (r *KafkaRouter) HandleRequest(req domain.Request) (domain.Response, error)
 	// API Key 1 == Fetch
 	// API key 18 (0x00, 0x12) = ApiVersions
 	// API key 75 (0x4B) = DescribeTopicPartitions
+
+	fmt.Printf("Sent API Key %+v\n", apiKey)
+
 	switch apiKey {
 	case 1:
 		return r.fetchHandler.HandleRequest(req)
