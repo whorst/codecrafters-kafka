@@ -3,6 +3,7 @@ package kafka_describe_topic_service
 import (
 	"encoding/binary"
 	"fmt"
+	"sort"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 	cluster_metadata_port "github.com/codecrafters-io/kafka-starter-go/core/ports/cluster_metadata"
@@ -117,6 +118,11 @@ func (s *KafkaDescribeService) GetTopicsFromRequestData(clusterMetadata cluster_
 		}
 		topicResponseInfo = append(topicResponseInfo, topicInfo)
 	}
+
+	sort.Slice(topicResponseInfo, func(i, j int) bool {
+		return topicResponseInfo[i].TopicNameInfo.TopicName < topicResponseInfo[j].TopicNameInfo.TopicName
+	})
+
 	return topicResponseInfo
 }
 
