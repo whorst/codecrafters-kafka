@@ -1,4 +1,4 @@
-package kafka_service
+package api_version_service
 
 import (
 	"encoding/binary"
@@ -16,8 +16,8 @@ type KafkaService struct {
 	parser parser.ProtocolParser
 }
 
-// NewKafkaService creates a new Kafka service that implements the driving port
-func NewKafkaService(parser parser.ProtocolParser) driving.KafkaHandler {
+// ApiVersionService creates a new Kafka service that implements the driving port
+func NewApiVersionService(parser parser.ProtocolParser) driving.KafkaHandler {
 	return &KafkaService{
 		parser: parser,
 	}
@@ -41,12 +41,7 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 		ApiKeysArrayLength: []byte{0x04},
 		ApiKeys: []parser.ApiKey{
 			getFetchApiKey(),
-			{
-				ApiKey:         []byte{0x00, 0x12},
-				MinVersion:     []byte{0x00, 0x00},
-				MaxVersion:     []byte{0x00, 0x04},
-				TagBufferChild: []byte{0x00},
-			},
+			getApiVersionApiKey(),
 			getDescribeTopicPartitionsApiKey(),
 		},
 		ThrottleTimeMs:  []byte{0x00, 0x00, 0x00, 0x00},
@@ -98,6 +93,15 @@ func getFetchApiKey() parser.ApiKey {
 		ApiKey:         int16ToBytes(1),
 		MinVersion:     []byte{0x00, 0x00},
 		MaxVersion:     []byte{0x00, 0x10},
+		TagBufferChild: []byte{0x00},
+	}
+}
+
+func getApiVersionApiKey() parser.ApiKey {
+	return parser.ApiKey{
+		ApiKey:         []byte{0x00, 0x12},
+		MinVersion:     []byte{0x00, 0x00},
+		MaxVersion:     []byte{0x00, 0x04},
 		TagBufferChild: []byte{0x00},
 	}
 }

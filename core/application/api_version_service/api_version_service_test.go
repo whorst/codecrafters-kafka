@@ -1,4 +1,4 @@
-package kafka_service
+package api_version_service
 
 import (
 	"encoding/binary"
@@ -58,7 +58,7 @@ func TestKafkaService_HandleRequest_ErrorCodeForValidAPIVersion(t *testing.T) {
 				},
 			}
 
-			service := NewKafkaService(mockParser)
+			service := NewApiVersionService(mockParser)
 			req := domain.Request{Data: []byte{0x00, 0x00, 0x00, 0x00}}
 
 			resp, err := service.HandleRequest(req)
@@ -109,7 +109,7 @@ func TestKafkaService_HandleRequest_ErrorCodeForInvalidAPIVersion(t *testing.T) 
 				},
 			}
 
-			service := NewKafkaService(mockParser)
+			service := NewApiVersionService(mockParser)
 			req := domain.Request{Data: []byte{0x00, 0x00, 0x00, 0x00}}
 
 			resp, err := service.HandleRequest(req)

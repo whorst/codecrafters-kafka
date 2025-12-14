@@ -19,7 +19,7 @@ func main() {
 
 	// Create the parser adapters (protocol parser - infrastructure)
 	protocolParser := parser.NewKafkaProtocolParser()
-	kafkaService := kafka_service.NewKafkaService(protocolParser)
+	apiVersionService := api_version_service.NewApiVersionService(protocolParser)
 
 	protocolParserDescribeTopic := parser.NewKafkaProtocolParserDescribeTopic()
 	clusterMetadataParser := cluster_metadata_adapter.NewClusterMetadataParser()
@@ -27,7 +27,7 @@ func main() {
 	fetchService := fetch_service.NewFetchService(protocolParser)
 
 	// Create unified router that routes based on API key
-	router := kafka_router.NewKafkaRouter(kafkaService, kafkaServiceDescribeTopic, fetchService)
+	router := kafka_router.NewKafkaRouter(apiVersionService, kafkaServiceDescribeTopic, fetchService)
 
 	tcpServer := driving.NewTCPServer(router, "0.0.0.0:9092")
 
