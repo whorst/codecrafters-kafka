@@ -7,7 +7,7 @@ import (
 	"github.com/codecrafters-io/kafka-starter-go/core/application/fetch_service"
 	"github.com/codecrafters-io/kafka-starter-go/core/application/kafka_describe_topic_service"
 	"github.com/codecrafters-io/kafka-starter-go/core/application/kafka_router"
-	"github.com/codecrafters-io/kafka-starter-go/core/application/kafka_service"
+	"github.com/codecrafters-io/kafka-starter-go/core/application/api_version_service"
 	cluster_metadata_adapter "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/cluster_metadata"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/driving"
 	parser "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/parser"
