@@ -38,7 +38,7 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 	responseData := &parser.ResponseData{
 		CorrelationID:      parsedReq.CorrelationID,
 		ErrorCode:          errorCode,
-		ApiKeysArrayLength: []byte{0x03},
+		ApiKeysArrayLength: []byte{0x04},
 		ApiKeys: []parser.ApiKey{
 			getFetchApiKey(),
 			{
