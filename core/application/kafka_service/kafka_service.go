@@ -88,7 +88,7 @@ func getDescribeTopicPartitionsApiKey() parser.ApiKey {
 	return parser.ApiKey{
 		ApiKey:         apiKey,
 		MinVersion:     []byte{0x00, 0x00},
-		MaxVersion:     []byte{0x00, 0x00},
+		MaxVersion:     []byte{0x00, 0x10},
 		TagBufferChild: []byte{0x00},
 	}
 }
