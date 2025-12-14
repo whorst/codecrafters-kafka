@@ -40,13 +40,14 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 		ErrorCode:          errorCode,
 		ApiKeysArrayLength: []byte{0x03},
 		ApiKeys: []parser.ApiKey{
-			getDescribeTopicPartitionsApiKey(parsedReq.APIVersion),
-			//{
-			//	ApiKey:         []byte{0x00, 0x12},
-			//	MinVersion:     []byte{0x00, 0x00},
-			//	MaxVersion:     []byte{0x00, 0x04},
-			//	TagBufferChild: []byte{0x00},
-			//},
+			getDescribeTopicPartitionsApiKey(),
+			getFetchApiKey(),
+			{
+				ApiKey:         []byte{0x00, 0x12},
+				MinVersion:     []byte{0x00, 0x00},
+				MaxVersion:     []byte{0x00, 0x04},
+				TagBufferChild: []byte{0x00},
+			},
 		},
 		ThrottleTimeMs:  []byte{0x00, 0x00, 0x00, 0x00},
 		TagBufferParent: []byte{0x00},
@@ -80,16 +81,21 @@ func (s *KafkaService) determineErrorCode(apiVersion int) []byte {
 	return errorCodeBuffer
 }
 
-func getDescribeTopicPartitionsApiKey(apiVersion int) parser.ApiKey {
+func getDescribeTopicPartitionsApiKey() parser.ApiKey {
 
 	apiKey := int16ToBytes(75)
 
-	if apiVersion == 4 {
-		apiKey = int16ToBytes(1)
-	}
-
 	return parser.ApiKey{
 		ApiKey:         apiKey,
+		MinVersion:     []byte{0x00, 0x00},
+		MaxVersion:     []byte{0x00, 0x00},
+		TagBufferChild: []byte{0x00},
+	}
+}
+
+func getFetchApiKey() parser.ApiKey {
+	return parser.ApiKey{
+		ApiKey:         int16ToBytes(1),
 		MinVersion:     []byte{0x00, 0x00},
 		MaxVersion:     []byte{0x00, 0x00},
 		TagBufferChild: []byte{0x00},
