@@ -47,7 +47,7 @@ func (s *KafkaService) HandleRequest(req domain.Request) (domain.Response, error
 				MaxVersion:     []byte{0x00, 0x04},
 				TagBufferChild: []byte{0x00},
 			},
-			//getDescribeTopicPartitionsApiKey(),
+			getDescribeTopicPartitionsApiKey(),
 		},
 		ThrottleTimeMs:  []byte{0x00, 0x00, 0x00, 0x00},
 		TagBufferParent: []byte{0x00},
