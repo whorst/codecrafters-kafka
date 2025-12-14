@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/codecrafters-io/kafka-starter-go/core/application/fetch_service"
 	"github.com/codecrafters-io/kafka-starter-go/core/application/kafka_describe_topic_service"
 	"github.com/codecrafters-io/kafka-starter-go/core/application/kafka_router"
 	"github.com/codecrafters-io/kafka-starter-go/core/application/kafka_service"
@@ -23,9 +24,10 @@ func main() {
 	protocolParserDescribeTopic := parser.NewKafkaProtocolParserDescribeTopic()
 	clusterMetadataParser := cluster_metadata_adapter.NewClusterMetadataParser()
 	kafkaServiceDescribeTopic := kafka_describe_topic_service.NewKafkaDescribeTopicService(protocolParserDescribeTopic, clusterMetadataParser)
+	fetchService := fetch_service.NewFetchService(protocolParser)
 
 	// Create unified router that routes based on API key
-	router := kafka_router.NewKafkaRouter(kafkaService, kafkaServiceDescribeTopic)
+	router := kafka_router.NewKafkaRouter(kafkaService, kafkaServiceDescribeTopic, fetchService)
 
 	tcpServer := driving.NewTCPServer(router, "0.0.0.0:9092")
 

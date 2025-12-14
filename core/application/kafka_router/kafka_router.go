@@ -10,15 +10,17 @@ import (
 // KafkaRouter is a unified handler that routes requests to the appropriate service
 // based on the API key in the request.
 type KafkaRouter struct {
-	apiVersionsHandler      driving.KafkaHandler
-	describeTopicHandler    driving.KafkaHandler
+	apiVersionsHandler   driving.KafkaHandler
+	describeTopicHandler driving.KafkaHandler
+	fetchHandler         driving.KafkaHandler
 }
 
 // NewKafkaRouter creates a new Kafka router that implements the driving port
-func NewKafkaRouter(apiVersionsHandler, describeTopicHandler driving.KafkaHandler) driving.KafkaHandler {
+func NewKafkaRouter(apiVersionsHandler, describeTopicHandler driving.KafkaHandler, fetchHandler driving.KafkaHandler) driving.KafkaHandler {
 	return &KafkaRouter{
 		apiVersionsHandler:   apiVersionsHandler,
 		describeTopicHandler: describeTopicHandler,
+		fetchHandler:         fetchHandler,
 	}
 }
 
@@ -37,9 +39,12 @@ func (r *KafkaRouter) HandleRequest(req domain.Request) (domain.Response, error)
 	apiKey := binary.BigEndian.Uint16(apiKeyBytes)
 
 	// Route based on API key
+	// API Key 1 == Fetch
 	// API key 18 (0x00, 0x12) = ApiVersions
 	// API key 75 (0x4B) = DescribeTopicPartitions
 	switch apiKey {
+	case 1:
+		return r.fetchHandler.HandleRequest(req)
 	case 18: // ApiVersions
 		return r.apiVersionsHandler.HandleRequest(req)
 	case 75: // DescribeTopicPartitions
@@ -49,4 +54,3 @@ func (r *KafkaRouter) HandleRequest(req domain.Request) (domain.Response, error)
 		return r.apiVersionsHandler.HandleRequest(req)
 	}
 }
-
