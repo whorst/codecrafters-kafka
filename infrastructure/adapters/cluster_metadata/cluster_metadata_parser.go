@@ -119,8 +119,6 @@ func (c *ClusterMetadata) processRecord(data []byte, offset int) int {
 	keyLength, totalBytesRead := common.ReadVarIntSigned(offset, data)
 	offset += totalBytesRead
 
-	// TODO: This is Key. Is it always none? It's set to 0 according to the docs https://binspec.org/kafka-cluster-metadata?highlight=66-65
-
 	valueLength, totalBytesRead := common.ReadVarIntSigned(offset, data)
 	offset += totalBytesRead
 
@@ -216,7 +214,7 @@ func (c *ClusterMetadata) processPartitionRecord(data []byte, offset int) {
 	offset += totalBytesRead
 
 	for range lengthOfReplicaArray {
-		replicaId := data[offset : offset+4] //TODO: This might be wrong https://binspec.org/kafka-cluster-metadata?highlight=289-292
+		replicaId := data[offset : offset+4]
 		partitionRecord.ReplicaNodesArray = append(partitionRecord.ReplicaNodesArray, replicaId...)
 		offset += 4
 	}
@@ -227,7 +225,7 @@ func (c *ClusterMetadata) processPartitionRecord(data []byte, offset int) {
 	offset += totalBytesRead
 
 	for range lengthOfInSyncReplicaArray {
-		inSyncReplicaArray := data[offset : offset+4] // TODO: this might be wrong https://binspec.org/kafka-cluster-metadata?highlight=220-223
+		inSyncReplicaArray := data[offset : offset+4]
 		partitionRecord.IsrNodes.IsrNodeArray = append(partitionRecord.IsrNodes.IsrNodeArray, inSyncReplicaArray...)
 
 		offset += 4
@@ -267,11 +265,11 @@ func (c *ClusterMetadata) processPartitionRecord(data []byte, offset int) {
 	partitionRecord.ErrorCode = []byte{0x00, 0x00}
 	topicPartitionMetadataSlice := c.TopicUUIDPartitionMetadataMap[hex.EncodeToString(topicUuid)]
 	partitionRecord.PartitionIndex = common.IntToFourBytes(len(topicPartitionMetadataSlice) - 1)
-	partitionRecord.LeaderId = replicaIdOfLeader //TODO: Is this correct? https://binspec.org/kafka-cluster-metadata?highlight=300-303 but the expectation is https://binspec.org/kafka-describe-topic-partitions-response-v0?highlight=44-47
+	partitionRecord.LeaderId = replicaIdOfLeader
 	partitionRecord.LeaderEpoch = epochOfLeader
 
-	partitionRecord.EligibleLeaderReplicasArrayLength = []byte{0x01} //TODO: is this correct? https://binspec.org/kafka-describe-topic-partitions-response-v0?highlight=62-62
-	partitionRecord.LastKnownElrArrayLength = []byte{0x01}           //TODO: Same https://binspec.org/kafka-describe-topic-partitions-response-v0?highlight=62-62
+	partitionRecord.EligibleLeaderReplicasArrayLength = []byte{0x01}
+	partitionRecord.LastKnownElrArrayLength = []byte{0x01}
 	partitionRecord.OfflineReplicasArrayLength = []byte{0x01}
 	partitionRecord.TagBuffer = []byte{0x00}
 }
