@@ -69,3 +69,8 @@ func IntToFourBytes(value int) []byte {
 	binary.BigEndian.PutUint32(result, uint32(value))
 	return result
 }
+func IntToTwoBytes(value int) []byte {
+	result := make([]byte, 2)
+	binary.BigEndian.PutUint16(result, uint16(value))
+	return result
+}

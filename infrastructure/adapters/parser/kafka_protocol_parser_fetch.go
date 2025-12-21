@@ -305,7 +305,7 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *fetch.ResponseDataFe
 
 	// Topics array (varint length with +1 pattern)
 	topicsLength := len(response.Topics) + 1
-	topicsLengthVarInt := common.IntToFourBytes(topicsLength)
+	topicsLengthVarInt := common.IntToTwoBytes(topicsLength)
 	responseData = append(responseData, topicsLengthVarInt...)
 	fmt.Printf(">>>>>>>>>>>>> %x\n", responseData)
 
