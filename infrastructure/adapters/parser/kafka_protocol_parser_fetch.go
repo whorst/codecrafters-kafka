@@ -178,7 +178,7 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*fetch.ParsedReque
 			offset += 4
 
 			partitions = append(partitions, fetch.FetchPartition{
-				PartitionIndex:    partitionIndex,
+				PartitionIndex:     partitionIndex,
 				CurrentLeaderEpoch: currentLeaderEpoch,
 				FetchOffset:        fetchOffset,
 				LastFetchedEpoch:   lastFetchedEpoch,
@@ -265,19 +265,19 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*fetch.ParsedReque
 	}
 
 	return &fetch.ParsedRequestFetch{
-		APIKey:         apiKey,
-		APIVersion:     apiVersion,
-		CorrelationID:  correlationID,
-		ClientID:       clientID,
-		MaxWaitMS:      maxWaitMS,
-		MinBytes:       minBytes,
-		MaxBytes:       maxBytes,
-		IsolationLevel: isolationLevel,
-		SessionID:      sessionID,
-		SessionEpoch:   sessionEpoch,
-		Topics:         topics,
+		APIKey:          apiKey,
+		APIVersion:      apiVersion,
+		CorrelationID:   correlationID,
+		ClientID:        clientID,
+		MaxWaitMS:       maxWaitMS,
+		MinBytes:        minBytes,
+		MaxBytes:        maxBytes,
+		IsolationLevel:  isolationLevel,
+		SessionID:       sessionID,
+		SessionEpoch:    sessionEpoch,
+		Topics:          topics,
 		ForgottenTopics: forgottenTopics,
-		RackID:         rackID,
+		RackID:          rackID,
 	}, nil
 }
 
@@ -311,7 +311,7 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *fetch.ResponseDataFe
 	for _, topic := range response.Topics {
 		// Topic name (varint length + string, with +1 pattern)
 		topicNameLength := len(topic.Name) + 1
-		topicNameLengthVarInt := common.IntToVarInt(topicNameLength)
+		topicNameLengthVarInt := common.IntToFourBytes(topicNameLength)
 		responseData = append(responseData, topicNameLengthVarInt...)
 		responseData = append(responseData, []byte(topic.Name)...)
 
