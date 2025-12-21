@@ -59,9 +59,10 @@ type ApiKey struct {
 
 // ResponseDataFetch represents the data needed to build a Fetch response
 type ResponseDataFetch struct {
-	CorrelationID []byte // Correlation ID (4 bytes)
-	ThrottleTimeMs int32 // Throttle time in milliseconds (4 bytes INT32)
-	SessionID     int32  // Session ID (4 bytes INT32)
+	CorrelationID  []byte // Correlation ID (4 bytes)
+	ThrottleTimeMs int32  // Throttle time in milliseconds (4 bytes INT32)
+	ErrorCode      int16  // Error code (2 bytes INT16)
+	SessionID      int32  // Session ID (4 bytes INT32)
 	Topics         []FetchResponseTopic
 }
 
