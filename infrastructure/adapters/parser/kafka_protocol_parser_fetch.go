@@ -378,6 +378,9 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *fetch.ResponseDataFe
 		}
 	}
 
+	// Tag buffer after Topics array (1 byte)
+	responseData = append(responseData, 0x00)
+
 	// Prepend message size (4 bytes)
 	messageSizeBuffer := make([]byte, 4)
 	binary.BigEndian.PutUint32(messageSizeBuffer, uint32(len(responseData)))
