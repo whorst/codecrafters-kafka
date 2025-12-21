@@ -6,14 +6,14 @@ import (
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/driving"
-	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
+	"github.com/codecrafters-io/kafka-starter-go/core/ports/fetch"
 )
 
 type FetchService struct {
-	parser parser.ProtocolParser
+	parser fetch.FetchParser
 }
 
-func NewFetchService(parser parser.ProtocolParser) driving.KafkaHandler {
+func NewFetchService(parser fetch.FetchParser) driving.KafkaHandler {
 	return &FetchService{
 		parser: parser,
 	}
@@ -29,11 +29,11 @@ func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error
 	errorCode := s.determineErrorCode(parsedReq.APIVersion)
 
 	// Build response data structure
-	responseData := &parser.ResponseData{
+	responseData := &fetch.ResponseDataFetch{
 		CorrelationID:      parsedReq.CorrelationID,
 		ErrorCode:          errorCode,
 		ApiKeysArrayLength: []byte{0x03},
-		ApiKeys: []parser.ApiKey{
+		ApiKeys: []fetch.ApiKey{
 			getFetchApiKey(),
 			{
 				ApiKey:         []byte{0x00, 0x12},
@@ -43,6 +43,7 @@ func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error
 			},
 		},
 		ThrottleTimeMs:  []byte{0x00, 0x00, 0x00, 0x00},
+		SessionId:       []byte{0x00, 0x00, 0x00, 0x00},
 		TagBufferParent: []byte{0x00},
 	}
 
@@ -56,7 +57,6 @@ func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error
 		Data: encodedResponse,
 	}, nil
 
-	return domain.Response{Data: make([]byte, 0)}, nil
 }
 
 // determineErrorCode contains the business logic for error code determination.
@@ -76,8 +76,8 @@ func (s *FetchService) determineErrorCode(apiVersion int) []byte {
 	return errorCodeBuffer
 }
 
-func getFetchApiKey() parser.ApiKey {
-	return parser.ApiKey{
+func getFetchApiKey() fetch.ApiKey {
+	return fetch.ApiKey{
 		ApiKey:         int16ToBytes(1),
 		MinVersion:     []byte{0x00, 0x00},
 		MaxVersion:     []byte{0x00, 0x00},
