@@ -2,6 +2,7 @@ package parser
 
 import (
 	"encoding/binary"
+	"fmt"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/fetch"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/common"
@@ -304,14 +305,15 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *fetch.ResponseDataFe
 
 	// Topics array (varint length with +1 pattern)
 	topicsLength := len(response.Topics) + 1
-	topicsLengthVarInt := common.IntToVarInt(topicsLength)
+	fmt.Println(">>>>>>>>>>>>> ", topicsLength)
+	topicsLengthVarInt := common.IntToFourBytes(topicsLength)
 	responseData = append(responseData, topicsLengthVarInt...)
 
 	// Encode each topic
 	for _, topic := range response.Topics {
 		// Topic name (varint length + string, with +1 pattern)
 		topicNameLength := len(topic.Name) + 1
-		topicNameLengthVarInt := common.IntToFourBytes(topicNameLength)
+		topicNameLengthVarInt := common.IntToVarInt(topicNameLength)
 		responseData = append(responseData, topicNameLengthVarInt...)
 		responseData = append(responseData, []byte(topic.Name)...)
 
