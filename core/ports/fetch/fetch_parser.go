@@ -57,16 +57,34 @@ type ApiKey struct {
 	TagBufferChild []byte // Hard Coded to 1 byte
 }
 
-// ResponseDataFetch represents the data needed to build a response
+// ResponseDataFetch represents the data needed to build a Fetch response
 type ResponseDataFetch struct {
-	CorrelationID      []byte // Correlation ID (Unknown)
-	ErrorCode          []byte // Error code (2 bytes)
-	ApiKeysArrayLength []byte // Hard Coded to 1 byte
-	// ================ Everything below will eventually be a part of an array ================
-	ApiKeys []ApiKey
-	// ================ End Array ==========================
-	ThrottleTimeMs  []byte // Hard Coded to 4 bytes
-	TagBufferParent []byte // Hard Coded to 1 byte
-	SessionId       []byte // Hard Coded to 4 bytes
+	CorrelationID []byte // Correlation ID (4 bytes)
+	ThrottleTimeMs int32 // Throttle time in milliseconds (4 bytes INT32)
+	SessionID     int32  // Session ID (4 bytes INT32)
+	Topics         []FetchResponseTopic
+}
 
+// FetchResponseTopic represents a topic in the Fetch response
+type FetchResponseTopic struct {
+	Name       string
+	Partitions []FetchResponsePartition
+}
+
+// FetchResponsePartition represents a partition in the Fetch response
+type FetchResponsePartition struct {
+	PartitionIndex        int32  // Partition index (4 bytes INT32)
+	ErrorCode             int16  // Error code (2 bytes INT16)
+	HighWatermark         int64  // High watermark offset (8 bytes INT64)
+	LastStableOffset      int64  // Last stable offset (8 bytes INT64)
+	LogStartOffset        int64  // Log start offset (8 bytes INT64)
+	AbortedTransactions   []AbortedTransaction // Aborted transactions array
+	PreferredReadReplica  int32  // Preferred read replica (4 bytes INT32)
+	Records               []byte // Record set (variable length)
+}
+
+// AbortedTransaction represents an aborted transaction
+type AbortedTransaction struct {
+	ProducerID  int64 // Producer ID (8 bytes INT64)
+	FirstOffset int64 // First offset (8 bytes INT64)
 }

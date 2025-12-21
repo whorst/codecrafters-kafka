@@ -246,12 +246,13 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*fetch.ParsedReque
 		})
 	}
 
-	// RackID (2-byte length + string)
-	if offset+2 > len(data) {
+	// RackID (varint length + string, with +1 pattern)
+	if offset >= len(data) {
 		return nil, ErrInvalidRequestFetch
 	}
-	rackIDLength := common.BytesToInt(data[offset : offset+2])
-	offset += 2
+	rackIDLength, bytesRead := common.ReadVarIntUnsigned(offset, data)
+	rackIDLength -= 1 // Subtract 1 because of the +1 pattern
+	offset += bytesRead
 
 	rackID := ""
 	if rackIDLength > 0 {
@@ -283,29 +284,100 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*fetch.ParsedReque
 func (p *KafkaProtocolParserFetch) EncodeResponse(response *fetch.ResponseDataFetch) ([]byte, error) {
 	responseData := []byte{}
 
-	correlationIdInt := common.BytesToInt(response.CorrelationID)
-	if correlationIdInt == 1497528672 {
-		response.ErrorCode = []byte{0x00, 0x00}
-	}
-
-	messageSizeBuffer := make([]byte, 4)
-
-	//responseData = append(responseData, messageSizeBuffer...)
+	// CorrelationID (4 bytes)
 	responseData = append(responseData, response.CorrelationID...)
-	responseData = append(responseData, response.ErrorCode...)
-	responseData = append(responseData, response.ApiKeysArrayLength...)
-	for _, apiKey := range response.ApiKeys {
-		responseData = append(responseData, apiKey.ApiKey...)
-		responseData = append(responseData, apiKey.MinVersion...)
-		responseData = append(responseData, apiKey.MaxVersion...)
-		responseData = append(responseData, apiKey.TagBufferChild...)
+
+	// ThrottleTimeMs (4 bytes INT32)
+	throttleTimeMsBytes := make([]byte, 4)
+	binary.BigEndian.PutUint32(throttleTimeMsBytes, uint32(response.ThrottleTimeMs))
+	responseData = append(responseData, throttleTimeMsBytes...)
+
+	// SessionID (4 bytes INT32)
+	sessionIDBytes := make([]byte, 4)
+	binary.BigEndian.PutUint32(sessionIDBytes, uint32(response.SessionID))
+	responseData = append(responseData, sessionIDBytes...)
+
+	// Topics array (varint length with +1 pattern)
+	topicsLength := len(response.Topics) + 1
+	topicsLengthVarInt := common.IntToVarInt(topicsLength)
+	responseData = append(responseData, topicsLengthVarInt...)
+
+	// Encode each topic
+	for _, topic := range response.Topics {
+		// Topic name (varint length + string, with +1 pattern)
+		topicNameLength := len(topic.Name) + 1
+		topicNameLengthVarInt := common.IntToVarInt(topicNameLength)
+		responseData = append(responseData, topicNameLengthVarInt...)
+		responseData = append(responseData, []byte(topic.Name)...)
+
+		// Topic tag buffer (1 byte)
+		responseData = append(responseData, 0x00)
+
+		// Partitions array (varint length with +1 pattern)
+		partitionsLength := len(topic.Partitions) + 1
+		partitionsLengthVarInt := common.IntToVarInt(partitionsLength)
+		responseData = append(responseData, partitionsLengthVarInt...)
+
+		// Encode each partition
+		for _, partition := range topic.Partitions {
+			// PartitionIndex (4 bytes INT32)
+			partitionIndexBytes := make([]byte, 4)
+			binary.BigEndian.PutUint32(partitionIndexBytes, uint32(partition.PartitionIndex))
+			responseData = append(responseData, partitionIndexBytes...)
+
+			// ErrorCode (2 bytes INT16)
+			errorCodeBytes := make([]byte, 2)
+			binary.BigEndian.PutUint16(errorCodeBytes, uint16(partition.ErrorCode))
+			responseData = append(responseData, errorCodeBytes...)
+
+			// HighWatermark (8 bytes INT64)
+			highWatermarkBytes := make([]byte, 8)
+			binary.BigEndian.PutUint64(highWatermarkBytes, uint64(partition.HighWatermark))
+			responseData = append(responseData, highWatermarkBytes...)
+
+			// LastStableOffset (8 bytes INT64)
+			lastStableOffsetBytes := make([]byte, 8)
+			binary.BigEndian.PutUint64(lastStableOffsetBytes, uint64(partition.LastStableOffset))
+			responseData = append(responseData, lastStableOffsetBytes...)
+
+			// LogStartOffset (8 bytes INT64)
+			logStartOffsetBytes := make([]byte, 8)
+			binary.BigEndian.PutUint64(logStartOffsetBytes, uint64(partition.LogStartOffset))
+			responseData = append(responseData, logStartOffsetBytes...)
+
+			// AbortedTransactions array (varint length with +1 pattern)
+			abortedTxLength := len(partition.AbortedTransactions) + 1
+			abortedTxLengthVarInt := common.IntToVarInt(abortedTxLength)
+			responseData = append(responseData, abortedTxLengthVarInt...)
+
+			// Encode each aborted transaction
+			for _, abortedTx := range partition.AbortedTransactions {
+				// ProducerID (8 bytes INT64)
+				producerIDBytes := make([]byte, 8)
+				binary.BigEndian.PutUint64(producerIDBytes, uint64(abortedTx.ProducerID))
+				responseData = append(responseData, producerIDBytes...)
+
+				// FirstOffset (8 bytes INT64)
+				firstOffsetBytes := make([]byte, 8)
+				binary.BigEndian.PutUint64(firstOffsetBytes, uint64(abortedTx.FirstOffset))
+				responseData = append(responseData, firstOffsetBytes...)
+			}
+
+			// PreferredReadReplica (4 bytes INT32)
+			preferredReadReplicaBytes := make([]byte, 4)
+			binary.BigEndian.PutUint32(preferredReadReplicaBytes, uint32(partition.PreferredReadReplica))
+			responseData = append(responseData, preferredReadReplicaBytes...)
+
+			// Records (variable length - just append the bytes)
+			responseData = append(responseData, partition.Records...)
+		}
 	}
-	responseData = append(responseData, response.ThrottleTimeMs...)
-	responseData = append(responseData, response.TagBufferParent...)
 
+	// Prepend message size (4 bytes)
+	messageSizeBuffer := make([]byte, 4)
 	binary.BigEndian.PutUint32(messageSizeBuffer, uint32(len(responseData)))
-
 	responseData = append(messageSizeBuffer, responseData...)
+
 	return responseData, nil
 }
 
