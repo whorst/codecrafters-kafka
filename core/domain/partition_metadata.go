@@ -1,4 +1,4 @@
-package partition_metadata
+package domain
 
 type PartitionMetadata struct {
 	ErrorCode                         []byte // 2 bytes, set to 0                                 x

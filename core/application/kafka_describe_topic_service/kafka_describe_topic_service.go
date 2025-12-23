@@ -6,10 +6,9 @@ import (
 	"sort"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
-	cluster_metadata_port "github.com/codecrafters-io/kafka-starter-go/core/ports/cluster_metadata"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/driving"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
-	"github.com/codecrafters-io/kafka-starter-go/core/ports/partition_metadata"
+	cluster_metadata_port "github.com/codecrafters-io/kafka-starter-go/core/ports/repository/cluster_metadata"
 )
 
 // KafkaService implements the driving port (KafkaHandler interface).
@@ -17,11 +16,11 @@ import (
 // Rule 2: The application implements the port defined by the core.
 type KafkaDescribeService struct {
 	parser                  parser.ProtocolParserDescribeTopic
-	cluster_metadata_parser cluster_metadata_port.ClusterMetadataParser
+	cluster_metadata_parser cluster_metadata_port.ClusterMetadataRepository
 }
 
 // NewKafkaService creates a new Kafka service that implements the driving port
-func NewKafkaDescribeTopicService(parser parser.ProtocolParserDescribeTopic, metadata_parser cluster_metadata_port.ClusterMetadataParser) driving.KafkaHandler {
+func NewKafkaDescribeTopicService(parser parser.ProtocolParserDescribeTopic, metadata_parser cluster_metadata_port.ClusterMetadataRepository) driving.KafkaHandler {
 	return &KafkaDescribeService{
 		parser:                  parser,
 		cluster_metadata_parser: metadata_parser,
@@ -49,7 +48,7 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	topicResponseInfo := []parser.ResponseDataDescribeTopicInfo{}
 	topicsUnknown := []parser.ResponseDataDescribeTopicInfo{}
 
-	_, clusterMetadata := s.cluster_metadata_parser.ParseClusterMetadataFileByTopicNames()
+	_, clusterMetadata := s.cluster_metadata_parser.GetClusterMetadata()
 	fmt.Printf("TopicUUIDTopicMetadataInfoMap: %+v\n", clusterMetadata.TopicUUIDTopicMetadataInfoMap)
 	fmt.Printf("TopicUUIDPartitionMetadataMap: %+v\n", clusterMetadata.TopicUUIDPartitionMetadataMap)
 	fmt.Printf("TopicNameTopicUuidMap: %+v\n", clusterMetadata.TopicNameTopicUuidMap)
@@ -99,7 +98,7 @@ func (s *KafkaDescribeService) GetResponseDataDescribeTopic(parsedReqs *parser.P
 	return responseData
 }
 
-func (s *KafkaDescribeService) GetTopicsFromRequestData(clusterMetadata cluster_metadata_port.ClusterMetadataLogResponse, topicsToFind map[string]parser.TopicNameInfo, topicResponseInfo []parser.ResponseDataDescribeTopicInfo) []parser.ResponseDataDescribeTopicInfo {
+func (s *KafkaDescribeService) GetTopicsFromRequestData(clusterMetadata cluster_metadata_port.ClusterMetadataRepositoryResponse, topicsToFind map[string]parser.TopicNameInfo, topicResponseInfo []parser.ResponseDataDescribeTopicInfo) []parser.ResponseDataDescribeTopicInfo {
 	for _, topicData := range clusterMetadata.TopicUUIDTopicMetadataInfoMap {
 		fmt.Printf("Adding topic data to response for topic name: %+v\n", topicData.TopicNameInfo.TopicName)
 
@@ -126,19 +125,19 @@ func (s *KafkaDescribeService) GetTopicsFromRequestData(clusterMetadata cluster_
 	return topicResponseInfo
 }
 
-func (s *KafkaDescribeService) GetTopicsNotFoundFromRequestData(topicsToFind map[string]parser.TopicNameInfo, clusterMetadata cluster_metadata_port.ClusterMetadataLogResponse, topicsUnknown []parser.ResponseDataDescribeTopicInfo) []parser.ResponseDataDescribeTopicInfo {
+func (s *KafkaDescribeService) GetTopicsNotFoundFromRequestData(topicsToFind map[string]parser.TopicNameInfo, clusterMetadata cluster_metadata_port.ClusterMetadataRepositoryResponse, topicsUnknown []parser.ResponseDataDescribeTopicInfo) []parser.ResponseDataDescribeTopicInfo {
 	for topicName, topicToFind := range topicsToFind {
 		if _, exists := clusterMetadata.TopicNameTopicUuidMap[topicName]; !exists {
 
 			fmt.Printf("Could Not find Topic: %+v \n", topicName)
 			nonExistingInfo := parser.ResponseDataDescribeTopicInfo{
-				ErrorCode:                 []byte{0x00, 0x03},                        // []byte //2 bytes
-				TopicNameInfo:             topicToFind,                               // string // From the request?
-				TopicId:                   HardCodedTopicId,                          // string // UUID
-				IsInternal:                []byte{0x00},                              // []byte // 1 byte, hard coded to 00
-				Partitions:                []*partition_metadata.PartitionMetadata{}, // []byte // 1 byte, hard coded to 01
-				TopicAuthorizedOperations: []byte{0x00, 0x00, 0x00, 0x00},            // []byte // 4 bytes, hard coded to 00
-				TagBuffer:                 []byte{0x00},                              // []byte // Hard Coded to 1 byte, 00
+				ErrorCode:                 []byte{0x00, 0x03},             // []byte //2 bytes
+				TopicNameInfo:             topicToFind,                    // string // From the request?
+				TopicId:                   HardCodedTopicId,               // string // UUID
+				IsInternal:                []byte{0x00},                   // []byte // 1 byte, hard coded to 00
+				Partitions:                []*domain.PartitionMetadata{},  // []byte // 1 byte, hard coded to 01
+				TopicAuthorizedOperations: []byte{0x00, 0x00, 0x00, 0x00}, // []byte // 4 bytes, hard coded to 00
+				TagBuffer:                 []byte{0x00},                   // []byte // Hard Coded to 1 byte, 00
 			}
 			topicsUnknown = append(topicsUnknown, nonExistingInfo)
 		} else {
@@ -148,7 +147,7 @@ func (s *KafkaDescribeService) GetTopicsNotFoundFromRequestData(topicsToFind map
 	return topicsUnknown
 }
 
-func (s *KafkaDescribeService) GetPartitionMetadataForTopic(clusterMetadata cluster_metadata_port.ClusterMetadataLogResponse) {
+func (s *KafkaDescribeService) GetPartitionMetadataForTopic(clusterMetadata cluster_metadata_port.ClusterMetadataRepositoryResponse) {
 	for topicUuid, partitionMetadata := range clusterMetadata.TopicUUIDPartitionMetadataMap {
 		if topicMetadata, exists := clusterMetadata.TopicUUIDTopicMetadataInfoMap[topicUuid]; !exists {
 			panic("Partition Metadata has invalid topic")

@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"github.com/codecrafters-io/kafka-starter-go/core/ports/partition_metadata"
+	"github.com/codecrafters-io/kafka-starter-go/core/domain/partition_metadata"
 )
 
 type ProtocolParserDescribeTopic interface {

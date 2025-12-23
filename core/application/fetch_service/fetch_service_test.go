@@ -22,7 +22,7 @@ func TestKafkaFetchService(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			parser := infraparser.NewKafkaProtocolParserFetch()
 
-			service := NewFetchService(parser)
+			service := NewFetchService(parser, nil)
 			service.HandleRequest(domain.Request{Data: tt.data})
 		})
 	}

@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/codecrafters-io/kafka-starter-go/core/ports/fetch"
+	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/common"
 )
 
@@ -15,7 +15,7 @@ func NewKafkaProtocolParserFetch() *KafkaProtocolParserFetch {
 	return &KafkaProtocolParserFetch{}
 }
 
-func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*fetch.ParsedRequestFetch, error) {
+func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequestFetch, error) {
 	// Skip the 4-byte message size at the beginning
 	if len(data) < 16 {
 		return nil, ErrInvalidRequestFetch
@@ -106,7 +106,7 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*fetch.ParsedReque
 	topicsArrayLength -= 1 // Subtract 1 because of the +1 pattern
 	offset += totalBytesRead
 
-	topics := []fetch.FetchTopic{}
+	topics := []domain.FetchTopic{}
 	for i := 0; i < topicsArrayLength; i++ {
 		// Topic name (varint length + string)
 		if offset >= len(data) {
@@ -134,7 +134,7 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*fetch.ParsedReque
 		partitionsArrayLength -= 1 // Subtract 1 because of the +1 pattern
 		offset += bytesRead
 
-		partitions := []fetch.FetchPartition{}
+		partitions := []domain.FetchPartition{}
 		for j := 0; j < partitionsArrayLength; j++ {
 			// PartitionIndex (4 bytes INT32)
 			if offset+4 > len(data) {
@@ -178,7 +178,7 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*fetch.ParsedReque
 			partitionMaxBytes := int32(binary.BigEndian.Uint32(data[offset : offset+4]))
 			offset += 4
 
-			partitions = append(partitions, fetch.FetchPartition{
+			partitions = append(partitions, domain.FetchPartition{
 				PartitionIndex:     partitionIndex,
 				CurrentLeaderEpoch: currentLeaderEpoch,
 				FetchOffset:        fetchOffset,
@@ -188,7 +188,7 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*fetch.ParsedReque
 			})
 		}
 
-		topics = append(topics, fetch.FetchTopic{
+		topics = append(topics, domain.FetchTopic{
 			Name:       topicName,
 			Partitions: partitions,
 		})
@@ -202,7 +202,7 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*fetch.ParsedReque
 	forgottenTopicsArrayLength -= 1 // Subtract 1 because of the +1 pattern
 	offset += totalBytesRead
 
-	forgottenTopics := []fetch.ForgottenTopic{}
+	forgottenTopics := []domain.ForgottenTopic{}
 	for i := 0; i < forgottenTopicsArrayLength; i++ {
 		// Topic name (varint length + string)
 		if offset >= len(data) {
@@ -241,7 +241,7 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*fetch.ParsedReque
 			partitions = append(partitions, partitionIndex)
 		}
 
-		forgottenTopics = append(forgottenTopics, fetch.ForgottenTopic{
+		forgottenTopics = append(forgottenTopics, domain.ForgottenTopic{
 			Name:       topicName,
 			Partitions: partitions,
 		})
@@ -265,7 +265,7 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*fetch.ParsedReque
 		offset += rackIDLength
 	}
 
-	return &fetch.ParsedRequestFetch{
+	return &domain.ParsedRequestFetch{
 		APIKey:          apiKey,
 		APIVersion:      apiVersion,
 		CorrelationID:   correlationID,
@@ -282,7 +282,7 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*fetch.ParsedReque
 	}, nil
 }
 
-func (p *KafkaProtocolParserFetch) EncodeResponse(response *fetch.ResponseDataFetch) ([]byte, error) {
+func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataFetch) ([]byte, error) {
 	responseData := []byte{}
 
 	// CorrelationID (4 bytes)

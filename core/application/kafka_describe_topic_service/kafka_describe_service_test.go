@@ -5,8 +5,8 @@ import (
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 	portparser "github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
-	infraClusterMetadata "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/cluster_metadata"
 	infraparser "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/parser"
+	infraClusterMetadata "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/cluster_metadata"
 )
 
 // mockParser is a mock implementation of ProtocolParser for testing
