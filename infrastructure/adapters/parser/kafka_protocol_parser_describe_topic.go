@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"github.com/codecrafters-io/kafka-starter-go/core/domain/fetch_data"
+	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/common"
 )
@@ -107,7 +107,7 @@ func (p *KafkaProtocolParserDescribeTopic) EncodeResponse(response *parser.Respo
 	return responseData, nil
 }
 
-func (p *KafkaProtocolParserDescribeTopic) encodeAllPartitions(allPartitionMetadata []*fetch_data.domain) []byte {
+func (p *KafkaProtocolParserDescribeTopic) encodeAllPartitions(allPartitionMetadata []*domain.PartitionMetadata) []byte {
 	retVal := []byte{}
 	if len(allPartitionMetadata) == 0 {
 		return []byte{0x01}
@@ -122,7 +122,7 @@ func (p *KafkaProtocolParserDescribeTopic) encodeAllPartitions(allPartitionMetad
 	return retVal
 }
 
-func (p *KafkaProtocolParserDescribeTopic) encodePartition(pm *fetch_data.domain) []byte {
+func (p *KafkaProtocolParserDescribeTopic) encodePartition(pm *domain.PartitionMetadata) []byte {
 	result := []byte{}
 
 	// Error Code (2 bytes)

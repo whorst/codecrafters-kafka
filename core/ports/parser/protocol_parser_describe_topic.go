@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"github.com/codecrafters-io/kafka-starter-go/core/domain/partition_metadata"
+	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 )
 
 type ProtocolParserDescribeTopic interface {
@@ -43,7 +43,7 @@ type ResponseDataDescribeTopicInfo struct {
 	TopicNameInfo             TopicNameInfo // From the request?
 	TopicId                   []byte        // UUID
 	IsInternal                []byte        // 1 byte, hard coded to 00
-	Partitions                []*partition_metadata.PartitionMetadata
+	Partitions                []*domain.PartitionMetadata
 	TopicAuthorizedOperations []byte // 4 bytes, hard coded to 00
 	NextCursor                []byte // 1 byte, hard coded to 0xff
 	TagBuffer                 []byte // Hard Coded to 1 byte, 00
