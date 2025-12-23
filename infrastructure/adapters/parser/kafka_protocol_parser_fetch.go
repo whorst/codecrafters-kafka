@@ -18,7 +18,7 @@ func NewKafkaProtocolParserFetch() *KafkaProtocolParserFetch {
 func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequestFetch, error) {
 	// Skip the 4-byte message size at the beginning
 	if len(data) < 16 {
-		return nil, ErrInvalidRequestFetch
+		return nil, ErrInvalidRequestFetch("message header")
 	}
 
 	offset := 4 // Skip message size (4 bytes)
@@ -40,13 +40,13 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequ
 
 	// ClientID (2-byte length + string)
 	if offset+2 > len(data) {
-		return nil, ErrInvalidRequestFetch
+		return nil, ErrInvalidRequestFetch("ClientID length")
 	}
 	clientIDLength := common.BytesToInt(data[offset : offset+2])
 	offset += 2
 
 	if offset+clientIDLength > len(data) {
-		return nil, ErrInvalidRequestFetch
+		return nil, ErrInvalidRequestFetch("ClientID")
 	}
 	clientIDBytes := data[offset : offset+clientIDLength]
 	clientID := string(clientIDBytes)
@@ -58,35 +58,35 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequ
 	// Parse Body
 	// MaxWaitMS (4 bytes INT32)
 	if offset+4 > len(data) {
-		return nil, ErrInvalidRequestFetch
+		return nil, ErrInvalidRequestFetch("MaxWaitMS")
 	}
 	maxWaitMS := int32(binary.BigEndian.Uint32(data[offset : offset+4]))
 	offset += 4
 
 	// MinBytes (4 bytes INT32)
 	if offset+4 > len(data) {
-		return nil, ErrInvalidRequestFetch
+		return nil, ErrInvalidRequestFetch("MinBytes")
 	}
 	minBytes := int32(binary.BigEndian.Uint32(data[offset : offset+4]))
 	offset += 4
 
 	// MaxBytes (4 bytes INT32)
 	if offset+4 > len(data) {
-		return nil, ErrInvalidRequestFetch
+		return nil, ErrInvalidRequestFetch("MaxBytes")
 	}
 	maxBytes := int32(binary.BigEndian.Uint32(data[offset : offset+4]))
 	offset += 4
 
 	// IsolationLevel (1 byte)
 	if offset+1 > len(data) {
-		return nil, ErrInvalidRequestFetch
+		return nil, ErrInvalidRequestFetch("IsolationLevel")
 	}
 	isolationLevel := int8(data[offset])
 	offset += 1
 
 	// SessionID (4 bytes INT32)
 	if offset+4 > len(data) {
-		return nil, ErrInvalidRequestFetch
+		return nil, ErrInvalidRequestFetch("SessionID")
 	}
 
 	sessionID := int32(binary.BigEndian.Uint32(data[offset : offset+4]))
@@ -94,14 +94,14 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequ
 
 	// SessionEpoch (4 bytes INT32)
 	if offset+4 > len(data) {
-		return nil, ErrInvalidRequestFetch
+		return nil, ErrInvalidRequestFetch("SessionEpoch")
 	}
 	sessionEpoch := int32(binary.BigEndian.Uint32(data[offset : offset+4]))
 	offset += 4
 
 	// Topics array (varint length with +1 pattern)
 	if offset >= len(data) {
-		return nil, ErrInvalidRequestFetch
+		return nil, ErrInvalidRequestFetch("Topics array length")
 	}
 	topicsArrayLength, totalBytesRead := common.ReadVarIntUnsigned(offset, data)
 	topicsArrayLength -= 1 // Subtract 1 because of the +1 pattern
@@ -111,14 +111,14 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequ
 	for i := 0; i < topicsArrayLength; i++ {
 		// Topic name (varint length + string)
 		if offset >= len(data) {
-			return nil, ErrInvalidRequestFetch
+			return nil, ErrInvalidRequestFetch("Topic name length")
 		}
 		topicNameLength, bytesRead := common.ReadVarIntUnsigned(offset, data)
 		topicNameLength -= 1 // Subtract 1 because of the +1 pattern
 		offset += bytesRead
 
 		if offset+topicNameLength > len(data) {
-			return nil, ErrInvalidRequestFetch
+			return nil, ErrInvalidRequestFetch("Topic name")
 		}
 		topicNameBytes := data[offset : offset+topicNameLength]
 		topicName := string(topicNameBytes)
@@ -129,53 +129,52 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequ
 
 		// Partitions array (varint length with +1 pattern)
 		if offset >= len(data) {
-			return nil, ErrInvalidRequestFetch
+			return nil, ErrInvalidRequestFetch("Partitions array length")
 		}
 		partitionsArrayLength, bytesRead := common.ReadVarIntUnsigned(offset, data)
 		partitionsArrayLength -= 1 // Subtract 1 because of the +1 pattern
 		offset += bytesRead
-		fmt.Println("13")
 
 		partitions := []domain.FetchPartition{}
 		for j := 0; j < partitionsArrayLength; j++ {
 			// PartitionIndex (4 bytes INT32)
 			if offset+4 > len(data) {
-				return nil, ErrInvalidRequestFetch
+				return nil, ErrInvalidRequestFetch("PartitionIndex")
 			}
 			partitionIndex := int32(binary.BigEndian.Uint32(data[offset : offset+4]))
 			offset += 4
 
 			// CurrentLeaderEpoch (4 bytes INT32)
 			if offset+4 > len(data) {
-				return nil, ErrInvalidRequestFetch
+				return nil, ErrInvalidRequestFetch("CurrentLeaderEpoch")
 			}
 			currentLeaderEpoch := int32(binary.BigEndian.Uint32(data[offset : offset+4]))
 			offset += 4
 
 			// FetchOffset (8 bytes INT64)
 			if offset+8 > len(data) {
-				return nil, ErrInvalidRequestFetch
+				return nil, ErrInvalidRequestFetch("FetchOffset")
 			}
 			fetchOffset := int64(binary.BigEndian.Uint64(data[offset : offset+8]))
 			offset += 8
 
 			// LastFetchedEpoch (4 bytes INT32)
 			if offset+4 > len(data) {
-				return nil, ErrInvalidRequestFetch
+				return nil, ErrInvalidRequestFetch("LastFetchedEpoch")
 			}
 			lastFetchedEpoch := int32(binary.BigEndian.Uint32(data[offset : offset+4]))
 			offset += 4
 
 			// LogStartOffset (8 bytes INT64)
 			if offset+8 > len(data) {
-				return nil, ErrInvalidRequestFetch
+				return nil, ErrInvalidRequestFetch("LogStartOffset")
 			}
 			logStartOffset := int64(binary.BigEndian.Uint64(data[offset : offset+8]))
 			offset += 8
 
 			// PartitionMaxBytes (4 bytes INT32)
 			if offset+4 > len(data) {
-				return nil, ErrInvalidRequestFetch
+				return nil, ErrInvalidRequestFetch("PartitionMaxBytes")
 			}
 			partitionMaxBytes := int32(binary.BigEndian.Uint32(data[offset : offset+4]))
 			offset += 4
@@ -196,11 +195,9 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequ
 		})
 	}
 
-	fmt.Println("14")
-
 	// ForgottenTopics array (varint length with +1 pattern)
 	if offset >= len(data) {
-		return nil, ErrInvalidRequestFetch
+		return nil, ErrInvalidRequestFetch("ForgottenTopics array length")
 	}
 	forgottenTopicsArrayLength, totalBytesRead := common.ReadVarIntUnsigned(offset, data)
 	forgottenTopicsArrayLength -= 1 // Subtract 1 because of the +1 pattern
@@ -210,14 +207,14 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequ
 	for i := 0; i < forgottenTopicsArrayLength; i++ {
 		// Topic name (varint length + string)
 		if offset >= len(data) {
-			return nil, ErrInvalidRequestFetch
+			return nil, ErrInvalidRequestFetch("ForgottenTopic name length")
 		}
 		topicNameLength, bytesRead := common.ReadVarIntUnsigned(offset, data)
 		topicNameLength -= 1 // Subtract 1 because of the +1 pattern
 		offset += bytesRead
 
 		if offset+topicNameLength > len(data) {
-			return nil, ErrInvalidRequestFetch
+			return nil, ErrInvalidRequestFetch("ForgottenTopic name")
 		}
 		topicNameBytes := data[offset : offset+topicNameLength]
 		topicName := string(topicNameBytes)
@@ -228,7 +225,7 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequ
 
 		// Partitions array (varint length with +1 pattern)
 		if offset >= len(data) {
-			return nil, ErrInvalidRequestFetch
+			return nil, ErrInvalidRequestFetch("ForgottenTopic partitions array length")
 		}
 		partitionsArrayLength, bytesRead := common.ReadVarIntUnsigned(offset, data)
 		partitionsArrayLength -= 1 // Subtract 1 because of the +1 pattern
@@ -238,7 +235,7 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequ
 		for j := 0; j < partitionsArrayLength; j++ {
 			// Partition index (4 bytes INT32)
 			if offset+4 > len(data) {
-				return nil, ErrInvalidRequestFetch
+				return nil, ErrInvalidRequestFetch("ForgottenTopic partition index")
 			}
 			partitionIndex := int32(binary.BigEndian.Uint32(data[offset : offset+4]))
 			offset += 4
@@ -253,18 +250,16 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequ
 
 	// RackID (varint length + string, with +1 pattern)
 	if offset >= len(data) {
-		return nil, ErrInvalidRequestFetch
+		return nil, ErrInvalidRequestFetch("RackID length")
 	}
 	rackIDLength, bytesRead := common.ReadVarIntUnsigned(offset, data)
 	rackIDLength -= 1 // Subtract 1 because of the +1 pattern
 	offset += bytesRead
 
-	fmt.Println("15")
-
 	rackID := ""
 	if rackIDLength > 0 {
 		if offset+rackIDLength > len(data) {
-			return nil, ErrInvalidRequestFetch
+			return nil, ErrInvalidRequestFetch("RackID")
 		}
 		rackIDBytes := data[offset : offset+rackIDLength]
 		rackID = string(rackIDBytes)
@@ -311,9 +306,8 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 
 	// Topics array (varint length with +1 pattern)
 	topicsLength := len(response.Topics) + 1
-	topicsLengthVarInt := common.IntToTwoBytes(topicsLength)
+	topicsLengthVarInt := common.IntToVarInt(topicsLength)
 	responseData = append(responseData, topicsLengthVarInt...)
-	fmt.Printf(">>>>>>>>>>>>> %x\n", responseData)
 
 	// Encode each topic
 	for _, topic := range response.Topics {
@@ -397,5 +391,9 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 	return responseData, nil
 }
 
-// ErrInvalidRequestFetch is returned when the request data is invalid
-var ErrInvalidRequestFetch = &ParseError{Message: "invalid request: insufficient data"}
+// ErrInvalidRequestFetch returns a parse error with the specified field name
+func ErrInvalidRequestFetch(fieldName string) *ParseError {
+	return &ParseError{
+		Message: fmt.Sprintf("invalid request: insufficient data for field '%s'", fieldName),
+	}
+}
