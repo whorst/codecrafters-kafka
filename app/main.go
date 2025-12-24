@@ -10,7 +10,7 @@ import (
 	"github.com/codecrafters-io/kafka-starter-go/core/application/kafka_router"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/driving"
 	parser "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/parser"
-	cluster_metadata_repository "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/cluster_metadata"
+	"github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/cluster_metadata_repository"
 	fetch_repository "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/fetch"
 )
 
