@@ -8,20 +8,23 @@ import (
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
 	cluster_metadata_repository "github.com/codecrafters-io/kafka-starter-go/core/ports/repository/cluster_metadata"
 	fetch_repository "github.com/codecrafters-io/kafka-starter-go/core/ports/repository/fetch"
+	port_repo "github.com/codecrafters-io/kafka-starter-go/core/ports/repository/partition_file_repository"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/common"
 )
 
 type FetchService struct {
-	parser              parser.FetchParser
-	fetch_repository    fetch_repository.FetchRepository
-	metadata_repository cluster_metadata_repository.ClusterMetadataRepository
+	parser                    parser.FetchParser
+	fetch_repository          fetch_repository.FetchRepository
+	metadata_repository       cluster_metadata_repository.ClusterMetadataRepository
+	partition_file_repository port_repo.PartitionFileRepository
 }
 
-func NewFetchService(parser parser.FetchParser, repository fetch_repository.FetchRepository, metadata_repository cluster_metadata_repository.ClusterMetadataRepository) driving.KafkaHandler {
+func NewFetchService(parser parser.FetchParser, repository fetch_repository.FetchRepository, metadata_repository cluster_metadata_repository.ClusterMetadataRepository, partition_file_repository port_repo.PartitionFileRepository) driving.KafkaHandler {
 	return &FetchService{
-		parser:              parser,
-		fetch_repository:    repository,
-		metadata_repository: metadata_repository,
+		parser:                    parser,
+		fetch_repository:          repository,
+		metadata_repository:       metadata_repository,
+		partition_file_repository: partition_file_repository,
 	}
 }
 
@@ -45,18 +48,8 @@ func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error
 	}
 	_ = clusterMetaData
 
-	for _, topic := range topicFetchResponse.Topics {
-		partitionMetadataArray := clusterMetaData.TopicUUIDPartitionMetadataMap[topic.TopicName]
-		for partitionIndex, partition := range topic.Partitions {
-			fmt.Println(">>>>>>>>>>> ", partition)
-			fmt.Println(">>>>>>>>>>> ", partitionMetadataArray)
-			if partitionMetadataArray == nil || partitionIndex >= len(partitionMetadataArray) {
-				partition.ErrorCode = 100
-				continue
-			}
-			partition.ErrorCode = int16(common.BytesToInt(partitionMetadataArray[partitionIndex].ErrorCode))
-		}
-	}
+	messageFetchRequest := s.getMessageRequestForValidTopics(&topicFetchResponse, clusterMetaData)
+	s.partition_file_repository.GetPartitionMessage(messageFetchRequest)
 
 	// Encode the response using the protocol parser (infrastructure concern)
 	encodedResponse, err := s.parser.EncodeResponse(&topicFetchResponse)
@@ -67,4 +60,28 @@ func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error
 	return domain.Response{
 		Data: encodedResponse,
 	}, nil
+}
+
+func (s *FetchService) getMessageRequestForValidTopics(topicFetchResponse *domain.ResponseDataFetch, clusterMetaData cluster_metadata_repository.ClusterMetadataRepositoryResponse) domain.MessageFetchRequest {
+	retVal := domain.MessageFetchRequest{PartitionsToFetch: make([]domain.PartitionToFetch, 0)}
+
+	for _, topic := range topicFetchResponse.Topics {
+		partitionMetadataArray := clusterMetaData.TopicUUIDPartitionMetadataMap[topic.TopicName]
+		for partitionIndex, partition := range topic.Partitions {
+			if partitionMetadataArray == nil || partitionIndex >= len(partitionMetadataArray) {
+				partition.ErrorCode = 100
+				continue
+			}
+			errorCode := int16(common.BytesToInt(partitionMetadataArray[partitionIndex].ErrorCode))
+			partition.ErrorCode = errorCode
+			if errorCode == 0 {
+				retVal.PartitionsToFetch = append(retVal.PartitionsToFetch, domain.PartitionToFetch{
+					TopicName:          "",
+					PartitionIndex:     partitionIndex,
+					TopicFetchResponse: partition,
+				})
+			}
+		}
+	}
+	return retVal
 }

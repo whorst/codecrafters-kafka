@@ -12,6 +12,7 @@ import (
 	parser "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/parser"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/cluster_metadata_repository"
 	fetch_repository "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/fetch"
+	partition_file_repository "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/partition_repository"
 )
 
 func main() {
@@ -28,7 +29,12 @@ func main() {
 
 	protocolParserFetch := parser.NewKafkaProtocolParserFetch()
 	fetchRepository := fetch_repository.NewFetchRepository()
-	fetchService := fetch_service.NewFetchService(protocolParserFetch, fetchRepository, clusterMetadataRepository)
+	partitionFileRepository := partition_file_repository.NewPartitionFileRepository()
+	fetchService := fetch_service.NewFetchService(
+		protocolParserFetch,
+		fetchRepository,
+		clusterMetadataRepository,
+		partitionFileRepository)
 
 	// Create unified router that routes based on API key
 	router := kafka_router.NewKafkaRouter(apiVersionService, kafkaServiceDescribeTopic, fetchService)

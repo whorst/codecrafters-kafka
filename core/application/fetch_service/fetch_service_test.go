@@ -7,6 +7,7 @@ import (
 	infraparser "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/parser"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/cluster_metadata_repository"
 	fetch_repository "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/fetch"
+	partition_file_repository "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/partition_repository"
 )
 
 func TestKafkaFetchService(t *testing.T) {
@@ -29,8 +30,9 @@ func TestKafkaFetchService(t *testing.T) {
 			parser := infraparser.NewKafkaProtocolParserFetch()
 			repo := fetch_repository.NewFetchRepository()
 			fmr := cluster_metadata_repository.NewClusterMetadataRepository()
+			pfr := partition_file_repository.NewPartitionFileRepository()
 
-			service := NewFetchService(parser, repo, fmr)
+			service := NewFetchService(parser, repo, fmr, pfr)
 			_, err := service.HandleRequest(domain.Request{Data: tt.data})
 			if err != nil {
 				t.Errorf("HandleRequest failed: %v", err)
