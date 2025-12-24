@@ -22,7 +22,7 @@ func NewFetchService(parser parser.FetchParser, repository fetch_repository.Fetc
 }
 
 func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error) {
-
+	fmt.Printf("Valid Request: %+v\n", req.Data)
 	parsedReq, err := s.parser.ParseRequest(req.Data)
 	if err != nil {
 		fmt.Println(">>>>>>>> ", err.Error())
@@ -40,7 +40,7 @@ func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error
 	if err != nil {
 		return domain.Response{}, err
 	}
-
+	fmt.Printf("Valid Response: %+v\n", req.Data)
 	return domain.Response{
 		Data: encodedResponse,
 	}, nil
