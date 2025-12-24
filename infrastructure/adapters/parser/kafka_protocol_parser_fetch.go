@@ -296,7 +296,7 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 
 	// ErrorCode (2 bytes INT16)
 	errorCodeBytes := make([]byte, 4)
-	binary.BigEndian.PutUint32(errorCodeBytes, uint32(response.ErrorCode))
+	binary.BigEndian.PutUint16(errorCodeBytes, uint16(response.ErrorCode))
 	responseData = append(responseData, errorCodeBytes...)
 
 	// SessionID (4 bytes INT32)
