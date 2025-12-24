@@ -311,7 +311,7 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 	responseData = append(responseData, sessionIDBytes...)
 
 	// Fake to make tests pass
-	//responseData = append(responseData, 0x00)
+	responseData = append(responseData, 0x00)
 
 	// Topics array (varint length with +1 pattern)
 	topicsLength := len(response.Topics) + 1
