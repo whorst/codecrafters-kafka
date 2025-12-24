@@ -20,7 +20,7 @@ func (f FetchRepository) GetTopicFetch(parsedReq domain.ParsedRequestFetch) (dom
 		frt := domain.FetchResponseTopic{
 			TopicName:      parsedReq.Topics[0].Name,
 			TopicNameBytes: parsedReq.Topics[0].TopicNameBytes,
-			Partitions: []domain.FetchResponsePartition{
+			Partitions: []*domain.FetchResponsePartition{
 				{
 					PartitionIndex:       0,
 					ErrorCode:            0,

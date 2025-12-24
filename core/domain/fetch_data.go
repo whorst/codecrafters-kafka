@@ -54,7 +54,7 @@ type ResponseDataFetch struct {
 // FetchResponseTopic represents a topic in the Fetch response
 type FetchResponseTopic struct {
 	TopicName      string
-	Partitions     []FetchResponsePartition
+	Partitions     []*FetchResponsePartition
 	TopicNameBytes []byte
 }
 
