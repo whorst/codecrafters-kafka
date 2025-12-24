@@ -17,7 +17,7 @@ func (f FetchRepository) GetTopicFetch(parsedReq domain.ParsedRequestFetch) (dom
 	topics := []domain.FetchResponseTopic{}
 
 	topics = append(topics, domain.FetchResponseTopic{
-		Name: "foobar",
+		Name: parsedReq.Topics[0].Name,
 		Partitions: []domain.FetchResponsePartition{
 			domain.FetchResponsePartition{
 				PartitionIndex:       0,
