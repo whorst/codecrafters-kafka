@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"strings"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/common"
@@ -117,7 +118,12 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequ
 		}
 		topicNameBytes := data[offset : offset+16]
 		// Format UUID as string: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-		topicName := p.printString(topicNameBytes)
+		topicName := fmt.Sprintf("%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+			topicNameBytes[0], topicNameBytes[1], topicNameBytes[2], topicNameBytes[3],
+			topicNameBytes[4], topicNameBytes[5],
+			topicNameBytes[6], topicNameBytes[7],
+			topicNameBytes[8], topicNameBytes[9],
+			topicNameBytes[10], topicNameBytes[11], topicNameBytes[12], topicNameBytes[13], topicNameBytes[14], topicNameBytes[15])
 		offset += 16
 
 		// Skip topic tag buffer (1 byte)
@@ -309,16 +315,22 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 
 	// Topics array (varint length with +1 pattern)
 	topicsLength := len(response.Topics) + 1
-	topicsLengthVarInt := common.IntToTwoBytes(topicsLength)
+	topicsLengthVarInt := common.IntToVarInt(topicsLength)
 	responseData = append(responseData, topicsLengthVarInt...)
 
 	// Encode each topic
 	for _, topic := range response.Topics {
-		// Topic name (varint length + string, with +1 pattern)
-		topicNameLength := len(topic.Name) + 1
-		topicNameLengthVarInt := common.IntToTwoBytes(topicNameLength)
-		responseData = append(responseData, topicNameLengthVarInt...)
-		responseData = append(responseData, []byte(topic.Name)...)
+		// Topic name (UUID - 16 bytes fixed length, no varint length prefix)
+		// Parse UUID string back to 16 bytes: remove dashes and convert hex to bytes
+		uuidHex := topic.Name
+		// Remove dashes if present
+		uuidHex = strings.ReplaceAll(uuidHex, "-", "")
+		// Convert hex string to bytes
+		uuidBytes, err := hex.DecodeString(uuidHex)
+		if err != nil || len(uuidBytes) != 16 {
+			return nil, fmt.Errorf("invalid UUID format: %s", topic.Name)
+		}
+		responseData = append(responseData, uuidBytes...)
 
 		// Topic tag buffer (1 byte)
 		responseData = append(responseData, 0x00)
