@@ -2,6 +2,7 @@ package parser
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
@@ -109,20 +110,15 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequ
 
 	topics := []domain.FetchTopic{}
 	for i := 0; i < topicsArrayLength; i++ {
-		// Topic name (varint length + string)
-		if offset >= len(data) {
-			return nil, ErrInvalidRequestFetch("Topic name length")
+		// Topic name (UUID - 16 bytes fixed length)
+		// In Kafka protocol v16, topic names can be UUIDs encoded as 16 bytes
+		if offset+16 > len(data) {
+			return nil, ErrInvalidRequestFetch("Topic name UUID")
 		}
-		topicNameLength, bytesRead := common.ReadVarIntUnsigned(offset, data)
-		topicNameLength -= 1 // Subtract 1 because of the +1 pattern
-		offset += bytesRead
-
-		if offset+topicNameLength > len(data) {
-			return nil, ErrInvalidRequestFetch("Topic name")
-		}
-		topicNameBytes := data[offset : offset+topicNameLength]
-		topicName := string(topicNameBytes)
-		offset += topicNameLength
+		topicNameBytes := data[offset : offset+16]
+		// Format UUID as string: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+		topicName := p.printString(topicNameBytes)
+		offset += 16
 
 		// Skip topic tag buffer (1 byte)
 		offset += 1
@@ -281,6 +277,10 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequ
 		ForgottenTopics: forgottenTopics,
 		RackID:          rackID,
 	}, nil
+}
+
+func (p *KafkaProtocolParserFetch) printString(all []byte) string {
+	return hex.EncodeToString(all)
 }
 
 func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataFetch) ([]byte, error) {
