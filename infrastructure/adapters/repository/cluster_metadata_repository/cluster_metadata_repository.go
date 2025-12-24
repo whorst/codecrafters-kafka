@@ -59,6 +59,13 @@ func (c *ClusterMetadata) GetClusterMetadata() (clutser_metadata_port.ClusterMet
 	return *c.ClusterMetadataRepositoryResponse, nil
 }
 
+func ProcessRecordBatchesPublic(data []byte) {
+	x := ClusterMetadata{}
+	x.processRecordBatches(data)
+
+	fmt.Println(">>>>>>>>>>> ", x)
+}
+
 func (c *ClusterMetadata) processRecordBatches(data []byte) {
 	currentOffset := 0
 	for {
@@ -144,6 +151,7 @@ func (c *ClusterMetadata) processRecordValue(data []byte, offset int) {
 	recordValueType := data[offset]
 	offset += 1
 
+	fmt.Println(">>>>>>>>>>>>>> recordValueType ", recordValueType)
 	switch recordValueType {
 	case 0x00:
 		return

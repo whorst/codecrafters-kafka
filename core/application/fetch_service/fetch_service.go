@@ -6,7 +6,7 @@ import (
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/driving"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
-	cluster_metadata_repository "github.com/codecrafters-io/kafka-starter-go/core/ports/repository/cluster_metadata"
+	port_cluster_metadata_repository "github.com/codecrafters-io/kafka-starter-go/core/ports/repository/cluster_metadata"
 	fetch_repository "github.com/codecrafters-io/kafka-starter-go/core/ports/repository/fetch"
 	port_repo "github.com/codecrafters-io/kafka-starter-go/core/ports/repository/partition_file_repository"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/common"
@@ -15,11 +15,11 @@ import (
 type FetchService struct {
 	parser                    parser.FetchParser
 	fetch_repository          fetch_repository.FetchRepository
-	metadata_repository       cluster_metadata_repository.ClusterMetadataRepository
+	metadata_repository       port_cluster_metadata_repository.ClusterMetadataRepository
 	partition_file_repository port_repo.PartitionFileRepository
 }
 
-func NewFetchService(parser parser.FetchParser, repository fetch_repository.FetchRepository, metadata_repository cluster_metadata_repository.ClusterMetadataRepository, partition_file_repository port_repo.PartitionFileRepository) driving.KafkaHandler {
+func NewFetchService(parser parser.FetchParser, repository fetch_repository.FetchRepository, metadata_repository port_cluster_metadata_repository.ClusterMetadataRepository, partition_file_repository port_repo.PartitionFileRepository) driving.KafkaHandler {
 	return &FetchService{
 		parser:                    parser,
 		fetch_repository:          repository,
@@ -62,7 +62,7 @@ func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error
 	}, nil
 }
 
-func (s *FetchService) getMessageRequestForValidTopics(topicFetchResponse *domain.ResponseDataFetch, clusterMetaData cluster_metadata_repository.ClusterMetadataRepositoryResponse) domain.MessageFetchRequest {
+func (s *FetchService) getMessageRequestForValidTopics(topicFetchResponse *domain.ResponseDataFetch, clusterMetaData port_cluster_metadata_repository.ClusterMetadataRepositoryResponse) domain.MessageFetchRequest {
 	retVal := domain.MessageFetchRequest{PartitionsToFetch: make([]domain.PartitionToFetch, 0)}
 
 	for _, topic := range topicFetchResponse.Topics {

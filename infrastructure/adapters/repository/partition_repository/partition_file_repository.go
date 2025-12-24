@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
+	"github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/cluster_metadata_repository"
 )
 import port_repo "github.com/codecrafters-io/kafka-starter-go/core/ports/repository/partition_file_repository"
 
@@ -34,7 +35,6 @@ func openLogFile(partitionToFetch domain.PartitionToFetch) {
 		fmt.Printf("Failed to get file: %v\n", err)
 		panic("file partition error")
 	}
-	fmt.Println(data)
-
+	cluster_metadata_repository.ProcessRecordBatchesPublic(data)
 	///tmp/kraft-combined-logs/bar-0/00000000000000000000
 }
