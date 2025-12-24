@@ -29,9 +29,7 @@ func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error
 		return domain.Response{}, err
 	}
 
-	fmt.Println(">>>>>>>>>>>> here")
 	// Build response data structure
-
 	responseData, err := s.fetch_repository.GetTopicFetch(*parsedReq)
 	if err != nil {
 		fmt.Println(">>>>>>>> ", err.Error())

@@ -16,21 +16,26 @@ func (f FetchRepository) GetTopicFetch(parsedReq domain.ParsedRequestFetch) (dom
 
 	topics := []domain.FetchResponseTopic{}
 
-	topics = append(topics, domain.FetchResponseTopic{
-		Name: parsedReq.Topics[0].Name,
-		Partitions: []domain.FetchResponsePartition{
-			domain.FetchResponsePartition{
-				PartitionIndex:       0,
-				ErrorCode:            100,
-				HighWatermark:        0,
-				LastStableOffset:     0,
-				LogStartOffset:       0,
-				AbortedTransactions:  nil,
-				PreferredReadReplica: 0,
-				Records:              nil,
+	if len(parsedReq.Topics) > 0 {
+
+		frt := domain.FetchResponseTopic{
+			Name: parsedReq.Topics[0].Name,
+			Partitions: []domain.FetchResponsePartition{
+				domain.FetchResponsePartition{
+					PartitionIndex:       0,
+					ErrorCode:            100,
+					HighWatermark:        0,
+					LastStableOffset:     0,
+					LogStartOffset:       0,
+					AbortedTransactions:  nil,
+					PreferredReadReplica: 0,
+					Records:              nil,
+				},
 			},
-		},
-	})
+		}
+
+		topics = append(topics, frt)
+	}
 
 	return domain.ResponseDataFetch{
 		CorrelationID:  parsedReq.CorrelationID,
