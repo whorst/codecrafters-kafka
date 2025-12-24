@@ -295,7 +295,7 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 	responseData = append(responseData, throttleTimeMsBytes...)
 
 	// ErrorCode (2 bytes INT16)
-	errorCodeBytes := make([]byte, 4)
+	errorCodeBytes := make([]byte, 2)
 	binary.BigEndian.PutUint16(errorCodeBytes, uint16(response.ErrorCode))
 	responseData = append(responseData, errorCodeBytes...)
 
