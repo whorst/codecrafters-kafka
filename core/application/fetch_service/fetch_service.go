@@ -22,14 +22,6 @@ func NewFetchService(parser parser.FetchParser, repository fetch_repository.Fetc
 }
 
 func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error) {
-	for i, b := range req.Data {
-		fmt.Printf("0x%02x", b)
-		if i < len(req.Data)-1 {
-			fmt.Print(", ")
-		}
-	}
-	fmt.Println()
-
 	parsedReq, err := s.parser.ParseRequest(req.Data)
 	if err != nil {
 		fmt.Println(">>>>>>>> ", err.Error())
@@ -41,20 +33,12 @@ func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error
 	if err != nil {
 		fmt.Println(">>>>>>>> ", err.Error())
 	}
-	fmt.Println(">>>>>>>>>>>> here")
 	// Encode the response using the protocol parser (infrastructure concern)
 	encodedResponse, err := s.parser.EncodeResponse(&responseData)
 	if err != nil {
 		return domain.Response{}, err
 	}
 
-	for i, b := range encodedResponse {
-		fmt.Printf("0x%02x", b)
-		if i < len(encodedResponse)-1 {
-			fmt.Print(", ")
-		}
-	}
-	fmt.Println()
 	return domain.Response{
 		Data: encodedResponse,
 	}, nil
