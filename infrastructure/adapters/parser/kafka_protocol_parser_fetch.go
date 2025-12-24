@@ -315,9 +315,9 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 	// Encode each topic
 	for _, topic := range response.Topics {
 		// Topic name (varint length + string, with +1 pattern)
-		topicNameLength := len(topic.Name) + 1
-		topicNameLengthVarInt := common.IntToVarInt(topicNameLength)
-		responseData = append(responseData, topicNameLengthVarInt...)
+		//topicNameLength := len(topic.Name) + 1
+		//topicNameLengthVarInt := common.IntToVarInt(topicNameLength)
+		//responseData = append(responseData, topicNameLengthVarInt...)
 		responseData = append(responseData, []byte(topic.Name)...)
 
 		// Topic tag buffer (1 byte)
