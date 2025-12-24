@@ -1,6 +1,8 @@
 package fetch_service
 
 import (
+	"fmt"
+
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/driving"
 	"github.com/codecrafters-io/kafka-starter-go/core/ports/parser"
@@ -28,8 +30,11 @@ func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error
 
 	// Build response data structure
 
-	responseData, _ := s.fetch_repository.GetTopicFetch(*parsedReq)
-
+	responseData, err := s.fetch_repository.GetTopicFetch(*parsedReq)
+	if err != nil {
+		fmt.Println(">>>>>>>> ", err.Error())
+	}
+	fmt.Println(">>>>>>>>>>>> here")
 	// Encode the response using the protocol parser (infrastructure concern)
 	encodedResponse, err := s.parser.EncodeResponse(&responseData)
 	if err != nil {
