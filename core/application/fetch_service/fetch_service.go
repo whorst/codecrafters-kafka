@@ -67,6 +67,7 @@ func (s *FetchService) getMessageRequestForValidTopics(topicFetchResponse *domai
 
 	for _, topic := range topicFetchResponse.Topics {
 		partitionMetadataArray := clusterMetaData.TopicUUIDPartitionMetadataMap[topic.TopicName]
+		topicMetadata := clusterMetaData.TopicUUIDTopicMetadataInfoMap[topic.TopicName]
 		for partitionIndex, partition := range topic.Partitions {
 			if partitionMetadataArray == nil || partitionIndex >= len(partitionMetadataArray) {
 				partition.ErrorCode = 100
@@ -76,7 +77,7 @@ func (s *FetchService) getMessageRequestForValidTopics(topicFetchResponse *domai
 			partition.ErrorCode = errorCode
 			if errorCode == 0 {
 				retVal.PartitionsToFetch = append(retVal.PartitionsToFetch, domain.PartitionToFetch{
-					TopicName:          "",
+					TopicName:          topicMetadata.TopicNameInfo.TopicName,
 					PartitionIndex:     partitionIndex,
 					TopicFetchResponse: partition,
 				})
