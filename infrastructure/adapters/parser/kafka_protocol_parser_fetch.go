@@ -333,7 +333,7 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 		responseData = append(responseData, uuidBytes...)
 
 		// Topic tag buffer (1 byte)
-		responseData = append(responseData, 0x00)
+		//responseData = append(responseData, 0x00)
 
 		// Partitions array (varint length with +1 pattern)
 		partitionsLength := len(topic.Partitions) + 1
