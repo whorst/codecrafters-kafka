@@ -41,8 +41,7 @@ func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error
 
 	clusterMetaData, err := s.metadata_repository.GetClusterMetadata()
 	if err != nil {
-		fmt.Println(">>>>>>>> ", err.Error())
-		panic("panic")
+		fmt.Println(">>>>>>>> there is no cluster metadata", err.Error())
 	}
 	_ = clusterMetaData
 
