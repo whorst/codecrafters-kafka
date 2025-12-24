@@ -49,7 +49,10 @@ func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error
 	for _, topic := range topicFetchResponse.Topics {
 		partitionMetadataArray := clusterMetaData.TopicUUIDPartitionMetadataMap[topic.TopicName]
 		for partitionIndex, partition := range topic.Partitions {
-			// TODO: This could be buggy, we have to check that the partitionIndex matches with the index of the partitionMetadata
+			if partitionMetadataArray == nil || partitionIndex >= len(partitionMetadataArray) {
+				partition.ErrorCode = 100
+				continue
+			}
 			partition.ErrorCode = int16(common.BytesToInt(partitionMetadataArray[partitionIndex].ErrorCode))
 		}
 	}
