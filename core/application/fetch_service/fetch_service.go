@@ -49,6 +49,8 @@ func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error
 	for _, topic := range topicFetchResponse.Topics {
 		partitionMetadataArray := clusterMetaData.TopicUUIDPartitionMetadataMap[topic.TopicName]
 		for partitionIndex, partition := range topic.Partitions {
+			fmt.Println(">>>>>>>>>>> ", partition)
+			fmt.Println(">>>>>>>>>>> ", partitionMetadataArray)
 			if partitionMetadataArray == nil || partitionIndex >= len(partitionMetadataArray) {
 				partition.ErrorCode = 100
 				continue
