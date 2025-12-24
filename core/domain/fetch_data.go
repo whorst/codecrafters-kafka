@@ -21,8 +21,9 @@ type ParsedRequestFetch struct {
 
 // FetchTopic represents a topic in the Fetch request
 type FetchTopic struct {
-	Name       string
-	Partitions []FetchPartition
+	Name           string
+	Partitions     []FetchPartition
+	TopicNameBytes []byte
 }
 
 // FetchPartition represents a partition in the Fetch request
@@ -52,8 +53,9 @@ type ResponseDataFetch struct {
 
 // FetchResponseTopic represents a topic in the Fetch response
 type FetchResponseTopic struct {
-	Name       string
-	Partitions []FetchResponsePartition
+	TopicName      string
+	Partitions     []FetchResponsePartition
+	TopicNameBytes []byte
 }
 
 // FetchResponsePartition represents a partition in the Fetch response

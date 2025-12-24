@@ -48,7 +48,7 @@ func (s *KafkaDescribeService) HandleRequest(req domain.Request) (domain.Respons
 	topicResponseInfo := []parser.ResponseDataDescribeTopicInfo{}
 	topicsUnknown := []parser.ResponseDataDescribeTopicInfo{}
 
-	_, clusterMetadata := s.cluster_metadata_parser.GetClusterMetadata()
+	clusterMetadata, _ := s.cluster_metadata_parser.GetClusterMetadata()
 	fmt.Printf("TopicUUIDTopicMetadataInfoMap: %+v\n", clusterMetadata.TopicUUIDTopicMetadataInfoMap)
 	fmt.Printf("TopicUUIDPartitionMetadataMap: %+v\n", clusterMetadata.TopicUUIDPartitionMetadataMap)
 	fmt.Printf("TopicNameTopicUuidMap: %+v\n", clusterMetadata.TopicNameTopicUuidMap)

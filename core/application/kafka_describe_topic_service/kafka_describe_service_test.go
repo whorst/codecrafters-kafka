@@ -44,7 +44,7 @@ func TestKafkaKafkaDescribeService(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			parser := infraparser.NewKafkaProtocolParserDescribeTopic()
-			metadataParser := infraClusterMetadata.NewClusterMetadataParser()
+			metadataParser := infraClusterMetadata.NewClusterMetadataRepository()
 
 			service := NewKafkaDescribeTopicService(parser, metadataParser)
 			service.HandleRequest(domain.Request{Data: tt.data})

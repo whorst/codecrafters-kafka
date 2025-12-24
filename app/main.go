@@ -10,7 +10,7 @@ import (
 	"github.com/codecrafters-io/kafka-starter-go/core/application/kafka_router"
 	"github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/driving"
 	parser "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/parser"
-	cluster_metadata_adapter "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/cluster_metadata"
+	cluster_metadata_repository "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/cluster_metadata"
 	fetch_repository "github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/fetch"
 )
 
@@ -23,12 +23,12 @@ func main() {
 	apiVersionService := api_version_service.NewApiVersionService(protocolParser)
 
 	protocolParserDescribeTopic := parser.NewKafkaProtocolParserDescribeTopic()
-	clusterMetadataParser := cluster_metadata_adapter.NewClusterMetadataParser()
-	kafkaServiceDescribeTopic := kafka_describe_topic_service.NewKafkaDescribeTopicService(protocolParserDescribeTopic, clusterMetadataParser)
+	clusterMetadataRepository := cluster_metadata_repository.NewClusterMetadataRepository()
+	kafkaServiceDescribeTopic := kafka_describe_topic_service.NewKafkaDescribeTopicService(protocolParserDescribeTopic, clusterMetadataRepository)
 
 	protocolParserFetch := parser.NewKafkaProtocolParserFetch()
 	fetchRepository := fetch_repository.NewFetchRepository()
-	fetchService := fetch_service.NewFetchService(protocolParserFetch, fetchRepository)
+	fetchService := fetch_service.NewFetchService(protocolParserFetch, fetchRepository, clusterMetadataRepository)
 
 	// Create unified router that routes based on API key
 	router := kafka_router.NewKafkaRouter(apiVersionService, kafkaServiceDescribeTopic, fetchService)

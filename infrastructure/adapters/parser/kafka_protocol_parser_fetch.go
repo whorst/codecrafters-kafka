@@ -118,12 +118,7 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequ
 		}
 		topicNameBytes := data[offset : offset+16]
 		// Format UUID as string: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-		topicName := fmt.Sprintf("%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-			topicNameBytes[0], topicNameBytes[1], topicNameBytes[2], topicNameBytes[3],
-			topicNameBytes[4], topicNameBytes[5],
-			topicNameBytes[6], topicNameBytes[7],
-			topicNameBytes[8], topicNameBytes[9],
-			topicNameBytes[10], topicNameBytes[11], topicNameBytes[12], topicNameBytes[13], topicNameBytes[14], topicNameBytes[15])
+		topicName := hex.EncodeToString(topicNameBytes)
 		offset += 16
 
 		// Skip topic tag buffer (1 byte)
@@ -192,8 +187,9 @@ func (p *KafkaProtocolParserFetch) ParseRequest(data []byte) (*domain.ParsedRequ
 		}
 
 		topics = append(topics, domain.FetchTopic{
-			Name:       topicName,
-			Partitions: partitions,
+			Name:           topicName,
+			TopicNameBytes: topicNameBytes,
+			Partitions:     partitions,
 		})
 	}
 
@@ -322,13 +318,13 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 	for _, topic := range response.Topics {
 		// Topic name (UUID - 16 bytes fixed length, no varint length prefix)
 		// Parse UUID string back to 16 bytes: remove dashes and convert hex to bytes
-		uuidHex := topic.Name
+		uuidHex := topic.TopicName
 		// Remove dashes if present
 		uuidHex = strings.ReplaceAll(uuidHex, "-", "")
 		// Convert hex string to bytes
 		uuidBytes, err := hex.DecodeString(uuidHex)
 		if err != nil || len(uuidBytes) != 16 {
-			return nil, fmt.Errorf("invalid UUID format: %s", topic.Name)
+			return nil, fmt.Errorf("invalid UUID format: %s", topic.TopicName)
 		}
 		responseData = append(responseData, uuidBytes...)
 

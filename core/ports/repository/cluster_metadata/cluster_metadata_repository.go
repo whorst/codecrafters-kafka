@@ -1,4 +1,4 @@
-package clutser_metadata
+package cluster_metadata_repository
 
 import (
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
@@ -6,7 +6,7 @@ import (
 )
 
 type ClusterMetadataRepository interface {
-	GetClusterMetadata() (error, ClusterMetadataRepositoryResponse)
+	GetClusterMetadata() (ClusterMetadataRepositoryResponse, error)
 }
 
 type ClusterMetadataRepositoryResponse struct {

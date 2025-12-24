@@ -17,13 +17,13 @@ func (f FetchRepository) GetTopicFetch(parsedReq domain.ParsedRequestFetch) (dom
 	topics := []domain.FetchResponseTopic{}
 
 	if len(parsedReq.Topics) > 0 {
-
 		frt := domain.FetchResponseTopic{
-			Name: parsedReq.Topics[0].Name,
+			TopicName:      parsedReq.Topics[0].Name,
+			TopicNameBytes: parsedReq.Topics[0].TopicNameBytes,
 			Partitions: []domain.FetchResponsePartition{
-				domain.FetchResponsePartition{
+				{
 					PartitionIndex:       0,
-					ErrorCode:            100,
+					ErrorCode:            0,
 					HighWatermark:        0,
 					LastStableOffset:     0,
 					LogStartOffset:       0,

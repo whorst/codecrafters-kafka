@@ -1,8 +1,8 @@
-package cluster_metadata
+package cluster_metadata_repository
 
 import "testing"
 
 func TestClusterMetadata_ParseClusterMetadataFileByTopicNames(t *testing.T) {
-	parser := NewClusterMetadataParser()
+	parser := NewClusterMetadataRepository()
 	parser.GetClusterMetadata()
 }
