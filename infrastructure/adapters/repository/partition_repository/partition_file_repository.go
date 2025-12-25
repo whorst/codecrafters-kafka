@@ -39,5 +39,7 @@ func openLogFile(partitionToFetch domain.PartitionToFetch) {
 	fullyProcessed := cluster_metadata_repository.ProcessRecordBatchesPublic(data)
 
 	partitionToFetch.TopicFetchResponse.RecordsLength = fullyProcessed.RecordsLength
+
+	fmt.Println(">>>>>>>> showing record stuff", len(data), fullyProcessed.StartingRecordOffset)
 	partitionToFetch.TopicFetchResponse.Records = data[fullyProcessed.StartingRecordOffset:]
 }
