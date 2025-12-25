@@ -388,7 +388,6 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 
 			recordLengthVarInt := common.IntToVarInt(partition.RecordsLength + 1)
 			responseData = append(responseData, recordLengthVarInt...)
-			partition.Records[0] = 0xff
 			responseData = append(responseData, partition.Records...)
 
 			// Records (variable length - just append the bytes)
