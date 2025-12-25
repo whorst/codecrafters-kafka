@@ -45,6 +45,21 @@ func openLogFile(partitionToFetch domain.PartitionToFetch) {
 		partitionToFetch.TopicFetchResponse.RecordsLength = recordsLength
 	}
 
-	partitionToFetch.TopicFetchResponse.Records = data[recordsLengthOffset+4:]
+	// Read Batch Length to determine the full RecordBatch size
+	// Batch Length is at offset 8 (after Base Offset)
+	if 8+4 <= len(data) {
+		batchLength := common.BytesToInt(data[8 : 8+4])
+		// Full RecordBatch size = Base Offset (8) + Batch Length (4) + batchLength bytes
+		recordBatchSize := 8 + 4 + batchLength
+		
+		// Set Records to the full RecordBatch starting from the beginning
+		if recordBatchSize <= len(data) {
+			partitionToFetch.TopicFetchResponse.Records = data[0:recordBatchSize]
+		} else {
+			partitionToFetch.TopicFetchResponse.Records = data
+		}
+	} else {
+		partitionToFetch.TopicFetchResponse.Records = data
+	}
 
 }
