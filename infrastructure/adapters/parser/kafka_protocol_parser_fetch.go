@@ -399,7 +399,7 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 		}
 	}
 
-	newLength := len(responseData) - 50
+	newLength := len(responseData) - 20
 	responseData = responseData[:newLength]
 
 	// Tag buffer after Topics array (1 byte)
