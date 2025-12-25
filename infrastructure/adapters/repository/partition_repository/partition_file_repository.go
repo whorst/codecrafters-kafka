@@ -150,7 +150,7 @@ func openLogFile(partitionToFetch domain.PartitionToFetch) {
 			len(extractedRecords), len(partitionToFetch.TopicFetchResponse.Records))
 	}
 
-	toRemove := 50
+	toRemove := 25
 	newLen := len(partitionToFetch.TopicFetchResponse.Records) - toRemove
 
 	// 3. Re-slice
