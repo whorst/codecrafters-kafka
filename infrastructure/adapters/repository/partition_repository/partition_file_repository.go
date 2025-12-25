@@ -16,11 +16,10 @@ func NewPartitionFileRepository() port_repo.PartitionFileRepository {
 	return &PartitionFileRepository{}
 }
 
-func (PartitionFileRepository) GetPartitionMessage(messageFetchRequest domain.MessageFetchRequest) []byte {
+func (PartitionFileRepository) GetPartitionMessage(messageFetchRequest domain.MessageFetchRequest) {
 	for _, partitionToFetch := range messageFetchRequest.PartitionsToFetch {
 		openLogFile(partitionToFetch)
 	}
-	return []byte{}
 }
 
 func openLogFile(partitionToFetch domain.PartitionToFetch) {
@@ -34,7 +33,5 @@ func openLogFile(partitionToFetch domain.PartitionToFetch) {
 		fmt.Printf("Failed to get file: %v\n", err)
 		panic("file partition error")
 	}
-	//cluster_metadata_repository.ProcessRecordBatchesPublic(data)
 	partitionToFetch.TopicFetchResponse.Records = data
-	///tmp/kraft-combined-logs/bar-0/00000000000000000000
 }
