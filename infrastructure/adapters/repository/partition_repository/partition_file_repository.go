@@ -149,13 +149,4 @@ func openLogFile(partitionToFetch domain.PartitionToFetch) {
 		fmt.Printf(">>>>>>>> Truncated RecordBatch from %d bytes to %d bytes (first record only)\n",
 			len(extractedRecords), len(partitionToFetch.TopicFetchResponse.Records))
 	}
-
-	toRemove := 15
-	newLen := len(partitionToFetch.TopicFetchResponse.Records) - toRemove
-
-	// 3. Re-slice
-	// This is the idiomatic way to "truncate" or "lose" trailing elements.
-	// It doesn't reallocate memory; it just adjusts the internal slice header.
-	partitionToFetch.TopicFetchResponse.Records = partitionToFetch.TopicFetchResponse.Records[:newLen]
-
 }
