@@ -391,7 +391,7 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 			responseData = append(responseData, partition.Records...)
 
 			// Records (variable length - just append the bytes)
-			responseData = append(responseData, partition.Records...)
+			//responseData = append(responseData, partition.Records...)
 
 		}
 	}
