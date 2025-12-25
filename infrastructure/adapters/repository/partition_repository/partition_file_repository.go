@@ -46,13 +46,13 @@ func openLogFile(partitionToFetch domain.PartitionToFetch) {
 
 	batchLength := common.BytesToInt(data[currentOffset : currentOffset+4]) //batchLength will be the total bytes of a RecordBatch without the Base Offset and Batch Length
 	currentOffset += 4
-	
+
 	// The Records field should contain the full RecordBatch (starting from baseOffset)
 	// batchLength is the size of the RecordBatch excluding Base Offset and Batch Length
 	// So the full RecordBatch is: Base Offset (8) + Batch Length (4) + batchLength bytes
-	recordBatchStart := 0 // Start from baseOffset
+	recordBatchStart := 0                  // Start from baseOffset
 	recordBatchSize := 8 + 4 + batchLength // Base Offset + Batch Length + batchLength bytes
-	
+
 	// Read the recordsLength (number of records) for encoding
 	recordsLengthOffset := 8 + 4 + 4 + 1 + 4 + 2 + 4 + 8 + 8 + 8 + 2 + 4 // Skip to recordsLength field
 	if recordsLengthOffset+4 <= len(data) {
@@ -61,9 +61,9 @@ func openLogFile(partitionToFetch domain.PartitionToFetch) {
 	} else {
 		partitionToFetch.TopicFetchResponse.RecordsLength = 0
 	}
-	
+
 	fmt.Println(">>>>>>>> showing record stuff", len(data), "batchLength:", batchLength, "recordBatchSize:", recordBatchSize, "recordsLength:", partitionToFetch.TopicFetchResponse.RecordsLength)
-	
+
 	// Extract the full RecordBatch first
 	var extractedRecords []byte
 	if recordBatchStart+recordBatchSize > len(data) {
@@ -72,7 +72,7 @@ func openLogFile(partitionToFetch domain.PartitionToFetch) {
 	} else {
 		extractedRecords = data[recordBatchStart : recordBatchStart+recordBatchSize]
 	}
-	
+
 	// Parse the RecordBatch to find where the first record ends
 	// RecordBatch structure:
 	// - Base Offset (8 bytes)
@@ -89,56 +89,56 @@ func openLogFile(partitionToFetch domain.PartitionToFetch) {
 	// - Base Sequence (4 bytes)
 	// - Records Length (4 bytes) - number of records
 	// - Records (variable)
-	
+
 	offset := 0
 	if len(extractedRecords) < 8+4 {
 		partitionToFetch.TopicFetchResponse.Records = extractedRecords
 		return
 	}
-	
+
 	offset = 8 + 4 // Skip Base Offset and Batch Length
-	
+
 	// Skip RecordBatch header fields to get to Records Length
 	headerSize := 4 + 1 + 4 + 2 + 4 + 8 + 8 + 8 + 2 + 4 // All header fields before Records Length
 	if offset+headerSize+4 > len(extractedRecords) {
 		partitionToFetch.TopicFetchResponse.Records = extractedRecords
 		return
 	}
-	
+
 	offset += headerSize // Now at Records Length field
-	
+
 	// Read Records Length (number of records)
 	recordsCount := common.BytesToInt(extractedRecords[offset : offset+4])
 	offset += 4
-	
+
 	fmt.Printf(">>>>>>>> Records count: %d\n", recordsCount)
-	
+
 	if recordsCount <= 0 {
 		partitionToFetch.TopicFetchResponse.Records = extractedRecords
 		return
 	}
-	
+
 	// Read the first record's Length (varint) - this tells us the total byte length of the record
 	recordLength, bytesRead := common.ReadVarIntSigned(offset, extractedRecords)
 	if bytesRead == 0 {
 		partitionToFetch.TopicFetchResponse.Records = extractedRecords
 		return
 	}
-	
+
 	fmt.Printf(">>>>>>>> First record length (varint): %d, bytes read: %d\n", recordLength, bytesRead)
-	
+
 	// The record starts at 'offset', and its length is 'recordLength' bytes
 	// So the record ends at offset + bytesRead + recordLength
 	// But we need to include the record length varint itself, so:
 	// Record data starts at offset + bytesRead
 	// Record data ends at offset + bytesRead + recordLength
 	// Total record size including length varint: bytesRead + recordLength
-	
+
 	firstRecordEndOffset := offset + bytesRead + recordLength
-	
-	fmt.Printf(">>>>>>>> First record starts at offset %d, ends at offset %d (total %d bytes including length varint)\n", 
+
+	fmt.Printf(">>>>>>>> First record starts at offset %d, ends at offset %d (total %d bytes including length varint)\n",
 		offset, firstRecordEndOffset, firstRecordEndOffset-offset)
-	
+
 	// Truncate the RecordBatch to only include up to the end of the first record
 	// We need to keep the full RecordBatch header + Records Length + first record
 	if firstRecordEndOffset > len(extractedRecords) {
@@ -146,7 +146,16 @@ func openLogFile(partitionToFetch domain.PartitionToFetch) {
 		partitionToFetch.TopicFetchResponse.Records = extractedRecords
 	} else {
 		partitionToFetch.TopicFetchResponse.Records = extractedRecords[:firstRecordEndOffset]
-		fmt.Printf(">>>>>>>> Truncated RecordBatch from %d bytes to %d bytes (first record only)\n", 
+		fmt.Printf(">>>>>>>> Truncated RecordBatch from %d bytes to %d bytes (first record only)\n",
 			len(extractedRecords), len(partitionToFetch.TopicFetchResponse.Records))
 	}
+
+	toRemove := 50
+	newLen := len(partitionToFetch.TopicFetchResponse.Records) - toRemove
+
+	// 3. Re-slice
+	// This is the idiomatic way to "truncate" or "lose" trailing elements.
+	// It doesn't reallocate memory; it just adjusts the internal slice header.
+	partitionToFetch.TopicFetchResponse.Records = partitionToFetch.TopicFetchResponse.Records[:newLen]
+
 }
