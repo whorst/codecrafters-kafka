@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
-	"github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/cluster_metadata_repository"
+	"github.com/codecrafters-io/kafka-starter-go/infrastructure/common"
 )
 import port_repo "github.com/codecrafters-io/kafka-starter-go/core/ports/repository/partition_file_repository"
 
@@ -36,10 +36,23 @@ func openLogFile(partitionToFetch domain.PartitionToFetch) {
 	}
 	fmt.Println("Length of above file ", len(data))
 
-	fullyProcessed := cluster_metadata_repository.ProcessRecordBatchesPublic(data)
+	//fullyProcessed := cluster_metadata_repository.ProcessRecordBatchesPublic(data)
 
-	partitionToFetch.TopicFetchResponse.RecordsLength = fullyProcessed.RecordsLength
+	currentOffset := 0
 
-	fmt.Println(">>>>>>>> showing record stuff", len(data), fullyProcessed.StartingRecordOffset)
-	partitionToFetch.TopicFetchResponse.Records = data[fullyProcessed.StartingRecordOffset:]
+	baseOffset := common.BytesToInt(data[currentOffset : currentOffset+8])
+	currentOffset += 8
+	_ = baseOffset
+
+	batchLength := common.BytesToInt(data[currentOffset : currentOffset+4]) //batchLength will be the total bytes of a RecordBatch without the Base Offset and Batch Length
+	currentOffset += 4
+	_ = batchLength
+
+	currentOffset = currentOffset + 4 + 1 + 4 + 2 + 4 + 8 + 8 + 8 + 2 + 4
+	recordsLength := common.BytesToInt(data[currentOffset : currentOffset+4])
+	currentOffset = currentOffset + 4
+	partitionToFetch.TopicFetchResponse.RecordsLength = recordsLength
+
+	fmt.Println(">>>>>>>> showing record stuff", len(data), currentOffset)
+	partitionToFetch.TopicFetchResponse.Records = data[currentOffset:]
 }
