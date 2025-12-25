@@ -405,8 +405,8 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 	// Tag buffer after Topics array (1 byte)
 	responseData = append(responseData, 0x00)
 	responseData = append(responseData, 0x00)
-	//responseData = append(responseData, 0x00)
-	//responseData = append(responseData, 0x00)
+	responseData = append(responseData, 0x00)
+	responseData = append(responseData, 0x00)
 	//responseData = append(responseData, 0x00)
 	//responseData = append(responseData, 0x00)
 
