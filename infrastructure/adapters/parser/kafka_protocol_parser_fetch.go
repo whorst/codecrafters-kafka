@@ -386,6 +386,9 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 			binary.BigEndian.PutUint32(preferredReadReplicaBytes, uint32(partition.PreferredReadReplica))
 			responseData = append(responseData, preferredReadReplicaBytes...)
 
+			recordLengthVarInt := common.IntToVarInt(len(partition.Records) + 1)
+			responseData = append(responseData, recordLengthVarInt...)
+
 			// Records (variable length - just append the bytes)
 			responseData = append(responseData, partition.Records...)
 
@@ -393,11 +396,6 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 	}
 
 	// Tag buffer after Topics array (1 byte)
-	responseData = append(responseData, 0x00)
-	responseData = append(responseData, 0x00)
-	responseData = append(responseData, 0x00)
-	responseData = append(responseData, 0x00)
-	responseData = append(responseData, 0x00)
 	responseData = append(responseData, 0x00)
 
 	// Prepend message size (4 bytes)
