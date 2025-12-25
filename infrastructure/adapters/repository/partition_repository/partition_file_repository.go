@@ -33,5 +33,6 @@ func openLogFile(partitionToFetch domain.PartitionToFetch) {
 		fmt.Printf("Failed to get file: %v\n", err)
 		panic("file partition error")
 	}
+	fmt.Println("Length of above file ", len(data))
 	partitionToFetch.TopicFetchResponse.Records = data
 }
