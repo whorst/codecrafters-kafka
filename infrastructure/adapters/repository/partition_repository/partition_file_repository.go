@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/codecrafters-io/kafka-starter-go/core/domain"
+	"github.com/codecrafters-io/kafka-starter-go/infrastructure/adapters/repository/cluster_metadata_repository"
 )
 import port_repo "github.com/codecrafters-io/kafka-starter-go/core/ports/repository/partition_file_repository"
 
@@ -34,5 +35,9 @@ func openLogFile(partitionToFetch domain.PartitionToFetch) {
 		panic("file partition error")
 	}
 	fmt.Println("Length of above file ", len(data))
-	partitionToFetch.TopicFetchResponse.Records = data
+
+	fullyProcessed := cluster_metadata_repository.ProcessRecordBatchesPublic(data)
+
+	partitionToFetch.TopicFetchResponse.RecordsLength = fullyProcessed.RecordsLength
+	partitionToFetch.TopicFetchResponse.Records = data[fullyProcessed.StartingRecordOffset:]
 }

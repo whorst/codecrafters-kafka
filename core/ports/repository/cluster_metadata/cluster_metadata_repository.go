@@ -13,6 +13,8 @@ type ClusterMetadataRepositoryResponse struct {
 	TopicUUIDTopicMetadataInfoMap map[string]*TopicMetadataInfo
 	TopicUUIDPartitionMetadataMap map[string][]*domain.PartitionMetadata
 	TopicNameTopicUuidMap         map[string]string
+	RecordsLength                 int
+	StartingRecordOffset          int
 }
 
 type TopicMetadataInfo struct {

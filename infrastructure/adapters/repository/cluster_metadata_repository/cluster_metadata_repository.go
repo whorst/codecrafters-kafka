@@ -59,6 +59,12 @@ func (c *ClusterMetadata) GetClusterMetadata() (clutser_metadata_port.ClusterMet
 	return *c.ClusterMetadataRepositoryResponse, nil
 }
 
+func ProcessRecordBatchesPublic(data []byte) ClusterMetadata {
+	x := ClusterMetadata{}
+	x.processRecordBatches(data)
+	return x
+}
+
 func (c *ClusterMetadata) processRecordBatches(data []byte) {
 	currentOffset := 0
 	for {
@@ -87,7 +93,9 @@ func (c *ClusterMetadata) processRecordBatches(data []byte) {
 		//- Producer Epoch
 		//- Base Sequence
 		recordsLength := common.BytesToInt(data[currentOffset : currentOffset+4])
+		c.RecordsLength = recordsLength
 		currentOffset = currentOffset + 4
+		c.StartingRecordOffset = currentOffset
 
 		allRecordsBytesRead := c.processRecords(data, currentOffset, recordsLength)
 		currentOffset += allRecordsBytesRead

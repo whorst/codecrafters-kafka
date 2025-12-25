@@ -67,7 +67,8 @@ type FetchResponsePartition struct {
 	LogStartOffset       int64                // Log start offset (8 bytes INT64)
 	AbortedTransactions  []AbortedTransaction // Aborted transactions array
 	PreferredReadReplica int32                // Preferred read replica (4 bytes INT32)
-	Records              []byte               // Record set (variable length)
+	RecordsLength        int
+	Records              []byte // Record set (variable length)
 }
 
 // AbortedTransaction represents an aborted transaction
