@@ -62,8 +62,7 @@ func (c *ClusterMetadata) GetClusterMetadata() (clutser_metadata_port.ClusterMet
 func ProcessRecordBatchesPublic(data []byte) {
 	x := ClusterMetadata{}
 	x.processRecordBatches(data)
-
-	fmt.Println(">>>>>>>>>>> ", x)
+	fmt.Println("processed: ", x)
 }
 
 func (c *ClusterMetadata) processRecordBatches(data []byte) {
