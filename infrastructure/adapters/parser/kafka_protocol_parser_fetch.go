@@ -399,16 +399,16 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 		}
 	}
 
-	newLength := len(responseData) - 20
-	responseData = responseData[:newLength]
+	//newLength := len(responseData) - 20
+	//responseData = responseData[:newLength]
 
 	// Tag buffer after Topics array (1 byte)
 	responseData = append(responseData, 0x00)
 	responseData = append(responseData, 0x00)
-	responseData = append(responseData, 0x00)
-	responseData = append(responseData, 0x00)
-	responseData = append(responseData, 0x00)
-	responseData = append(responseData, 0x00)
+	//responseData = append(responseData, 0x00)
+	//responseData = append(responseData, 0x00)
+	//responseData = append(responseData, 0x00)
+	//responseData = append(responseData, 0x00)
 
 	// Prepend message size (4 bytes)
 	messageSizeBuffer := make([]byte, 4)
