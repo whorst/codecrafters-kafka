@@ -386,7 +386,10 @@ func (p *KafkaProtocolParserFetch) EncodeResponse(response *domain.ResponseDataF
 			binary.BigEndian.PutUint32(preferredReadReplicaBytes, uint32(partition.PreferredReadReplica))
 			responseData = append(responseData, preferredReadReplicaBytes...)
 
-			recordLengthVarInt := common.IntToVarInt(partition.RecordsLength + 1)
+			// Records field: varint (byte_length + 1) followed by the RecordBatch bytes
+			// RecordsLength is the number of records, but we need the byte length
+			recordsByteLength := len(partition.Records)
+			recordLengthVarInt := common.IntToVarInt(recordsByteLength + 1)
 			responseData = append(responseData, recordLengthVarInt...)
 			responseData = append(responseData, partition.Records...)
 			// Records (variable length - just append the bytes)
