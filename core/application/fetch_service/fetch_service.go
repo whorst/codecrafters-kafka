@@ -56,7 +56,7 @@ func (s *FetchService) HandleRequest(req domain.Request) (domain.Response, error
 	if err != nil {
 		return domain.Response{}, err
 	}
-
+	fmt.Println("Total Response: ", encodedResponse)
 	return domain.Response{
 		Data: encodedResponse,
 	}, nil
