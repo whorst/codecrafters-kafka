@@ -127,8 +127,6 @@ func openLogFile(partitionToFetch domain.PartitionToFetch) {
 	recordsCount := common.BytesToInt(extractedRecords[offset : offset+4])
 	offset += 4
 
-	fmt.Printf(">>>>>>>> Records count: %d\n", recordsCount)
-
 	if recordsCount <= 0 {
 		partitionToFetch.TopicFetchResponse.Records = extractedRecords
 		return
